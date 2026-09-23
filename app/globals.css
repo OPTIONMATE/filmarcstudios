@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   FILMARC STUDIOS — DESIGN TOKENS
+   --------------------------------------------------------------------------
+   This file is the single source of truth for every colour and
+   typeface used across the site. Components consume the tokens as Tailwind
+   utilities (bg-void, text-chalk, border-hairline, ...).
+
+   Rules for contributors:
+   - Never hardcode a colour in a component (no bg-[#000], no bg-gray-900).
+   - Add new tints/overlays here, derived from the palette below.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Surfaces --------------------------------------------------------- */
+  --filmarc-void: #04050a; /* page backdrop + pinned hero stage */
+  --filmarc-abyss: #070912; /* section backdrop */
+  --filmarc-ink: #0d101b; /* raised surfaces */
+
+  /* --- Typography ------------------------------------------------------- */
+  --filmarc-chalk: #f5f3ee; /* primary copy */
+  --filmarc-ash: #b2b0aa; /* secondary copy */
+  --filmarc-smoke: #757b8b; /* eyebrows / microcopy */
+
+  /* --- Accents ---------------------------------------------------------- */
+  /* Brand accents. Use them for UI accents. */
+  --filmarc-ember: #ff6a3d;
+  --filmarc-amber: #ffb347;
+  --filmarc-cyan: #35d6f5;
+  --filmarc-violet: #7a5cff;
+
+  /* --- Derived translucency (always mixed from the palette above) ------- */
+  --filmarc-hairline: color-mix(in srgb, var(--filmarc-chalk) 15%, transparent);
+  --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 38%, transparent);
+  --filmarc-overlay-mid: color-mix(in srgb, var(--filmarc-void) 62%, transparent);
+  --filmarc-overlay-strong: color-mix(in srgb, var(--filmarc-void) 90%, transparent);
+
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Palette → Tailwind utilities:
+     bg-void, text-chalk, border-hairline, bg-overlay-soft, text-ember, ... */
+  --color-void: var(--filmarc-void);
+  --color-abyss: var(--filmarc-abyss);
+  --color-ink: var(--filmarc-ink);
+  --color-chalk: var(--filmarc-chalk);
+  --color-ash: var(--filmarc-ash);
+  --color-smoke: var(--filmarc-smoke);
+  --color-ember: var(--filmarc-ember);
+  --color-amber: var(--filmarc-amber);
+  --color-cyan: var(--filmarc-cyan);
+  --color-violet: var(--filmarc-violet);
+  --color-hairline: var(--filmarc-hairline);
+  --color-overlay-soft: var(--filmarc-overlay-soft);
+  --color-overlay-mid: var(--filmarc-overlay-mid);
+  --color-overlay-strong: var(--filmarc-overlay-strong);
+
+  /* Semantic aliases */
+  --color-background: var(--filmarc-void);
+  --color-foreground: var(--filmarc-chalk);
+
+  /* Typefaces loaded in app/layout.tsx through next/font */
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bebas-neue), "Arial Narrow", ui-sans-serif, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* --------------------------------------------------------------------------
+   Token-driven utilities used by the hero sequence and the section it hands
+   off to. Every value below resolves to a token declared in :root above.
+   -------------------------------------------------------------------------- */
+
+/* Hairline outline of the hero's video window. Drawn as an inset shadow (not a
+   border) so it scales with the window instead of altering its box. */
+@utility hero-frame-ring {
+  box-shadow: inset 0 0 0 1px var(--filmarc-hairline);
+}
+
+/* --------------------------------------------------------------------------
+   Lenis — smooth scroll layer (see components/SmoothScroll.tsx).
+   The small subset of `lenis/dist/lenis.css` this app actually needs, inlined
+   here so the whole design system stays in one file.
+   -------------------------------------------------------------------------- */
+
+/* Lenis moves the document itself; let it own the height. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+/* lenis.stop() (used by anything that takes over the scroll) freezes the page
+   without the layout jumping. */
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+/* Nested scrollers opt out of the page-level smoothing. */
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Embedded frames must not steal the wheel while the page is being smoothed. */
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--filmarc-void);
+  color: var(--filmarc-chalk);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--filmarc-ember) 70%, transparent);
+  color: var(--filmarc-chalk);
+}
+
+/* Respect the OS "reduce motion" setting.
+   The hero's scroll sequence (GSAP timelines, pinning, Lenis smoothing) is
+   switched off in JavaScript — see the `gsap.matchMedia()` blocks in
+   components/HeroSection.tsx. This block is the CSS half: no decorative transitions, no smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
