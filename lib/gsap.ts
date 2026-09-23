@@ -14,9 +14,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* The hero is pinned for a long scroll distance; on mobile browsers the URL bar
-   expanding/collapsing "resizes" the viewport mid-scroll and would otherwise
-   force a ScrollTrigger.refresh() (and a visible jump) on every flick. */
+/* Mobile browsers expand and collapse the URL bar while scrolling, which
+   "resizes" the viewport mid-flick; ScrollTrigger would otherwise refresh -- and
+   visibly jump -- on every one of them. */
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 export { gsap, ScrollTrigger };

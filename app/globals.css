@@ -30,11 +30,25 @@
   --filmarc-cyan: #35d6f5;
   --filmarc-violet: #7a5cff;
 
+  /* --- Hero + navigation ------------------------------------------------ */
+  /* The hero sits on moving footage, so its copy is pure white rather than the
+     site's warm chalk, and its one action carries the comp's vivid yellow. */
+  --filmarc-bright: #ffffff; /* headline, wordmark, navigation links */
+  --filmarc-cta: #f5f500; /* the CTA fill — the only bright surface on screen */
+  --filmarc-cta-ink: #111111; /* copy set on the CTA: never white on yellow */
+  /* The opening sequence's star: the brand yellow above, plus this one warm
+     white core. Those two colours are the whole sequence
+     (components/Intro/FilmArcIntro.tsx). */
+  --filmarc-star-core: #fff8e3;
+
   /* --- Derived translucency (always mixed from the palette above) ------- */
   --filmarc-hairline: color-mix(in srgb, var(--filmarc-chalk) 15%, transparent);
   --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 38%, transparent);
   --filmarc-overlay-mid: color-mix(in srgb, var(--filmarc-void) 62%, transparent);
   --filmarc-overlay-strong: color-mix(in srgb, var(--filmarc-void) 90%, transparent);
+  /* The heaviest tint the hero's scrim uses: 55% of the void colour, i.e. the
+     top of the rgba(0,0,0,.35) → rgba(0,0,0,.60) band the hero comp allows. */
+  --filmarc-scrim-edge: color-mix(in srgb, var(--filmarc-void) 55%, transparent);
 
   color-scheme: dark;
 }
@@ -56,6 +70,10 @@
   --color-overlay-soft: var(--filmarc-overlay-soft);
   --color-overlay-mid: var(--filmarc-overlay-mid);
   --color-overlay-strong: var(--filmarc-overlay-strong);
+  --color-bright: var(--filmarc-bright);
+  --color-cta: var(--filmarc-cta);
+  --color-cta-ink: var(--filmarc-cta-ink);
+  --color-star-core: var(--filmarc-star-core);
 
   /* Semantic aliases */
   --color-background: var(--filmarc-void);
@@ -68,14 +86,105 @@
 }
 
 /* --------------------------------------------------------------------------
-   Token-driven utilities used by the hero sequence and the section it hands
-   off to. Every value below resolves to a token declared in :root above.
+   Token-driven utilities used by the hero scene. Every value below resolves to
+   a token declared in :root above.
    -------------------------------------------------------------------------- */
 
-/* Hairline outline of the hero's video window. Drawn as an inset shadow (not a
-   border) so it scales with the window instead of altering its box. */
-@utility hero-frame-ring {
-  box-shadow: inset 0 0 0 1px var(--filmarc-hairline);
+/* The scrim laid between the hero reel and everything above it (the navbar and
+   the copy). One flat tint carries the contrast — 38% near-black, inside the
+   35–60% band the hero comp specifies — and a vertical falloff adds weight
+   under the navbar and along the bottom edge without ever hiding the footage.
+   Declared as a single utility so the scrim element owns one background
+   declaration instead of competing `bg-*` classes. */
+@utility hero-scrim {
+  background-color: var(--filmarc-overlay-soft);
+  background-image: linear-gradient(
+    to bottom,
+    var(--filmarc-scrim-edge) 0%,
+    transparent 28%,
+    transparent 60%,
+    var(--filmarc-scrim-edge) 100%
+  );
+}
+
+/* The hero headline's two tiers. Every word keeps its first letter at the
+   headline's own size — the visual entry point — and drops the remaining
+   letters to 75% of it, on the same baseline, so the word still reads as one
+   word. Neither tier changes the line box: `leading-[0.85]` on the h1 keeps
+   owning the line spacing. */
+@utility heading-initial {
+  font-size: 1em;
+}
+
+@utility heading-rest {
+  font-size: 0.75em;
+}
+
+/* The hero entrance's opening frame — the half of the handoff that has to exist
+   before any JavaScript runs (see lib/heroEntrance.ts).
+
+   The server paints its HTML and React hydrates afterwards, so an opening frame
+   declared in JS is declared too late: the first frame a visitor sees would be
+   the *finished* hero, and the entrance would then snap the copy back to its
+   start and play it in from there. Declaring it here puts the opening frame into
+   that very first paint instead.
+
+   Note `transform` is deliberately not declared as well: invisibility is all the
+   first paint needs, and the rise stays in the timelines, where the motion has
+   one source of truth. GSAP writes it synchronously on an element that is still
+   invisible, so the handoff cannot be seen.
+
+   Gated on exactly the conditions in which the entrance runs:
+     - `scripting: enabled` — without JavaScript the marker never matches, so the
+       visitor's copy is simply already in place;
+     - `prefers-reduced-motion: no-preference` — the same query the components
+       hand to `gsap.matchMedia()`, so a reduced-motion visitor is never left
+       with a hero that never arrives.
+
+   Once the timeline has taken the properties over it removes the marker
+   (`releaseEntrance()`), which leaves this rule with nothing left to apply. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-hero-enter] {
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   THE INTRO — whether the opening sequence is in the box at all
+   (components/Intro/FilmArcIntro.tsx).
+
+   The overlay is out of the box by default; only the document's own switch —
+   `html[data-intro="play"]` — brings it in. That switch is written by the
+   overlay's bootstrap script while the parser is still reading the body, i.e.
+   before the first paint, so the first frame the browser draws is either the
+   sequence's own opening frame or nothing at all: never a black screen it is
+   about to throw away.
+
+   One rule, four consequences:
+     - a visitor without JavaScript never matches the switch, because the script
+       is what writes it: they get the homepage, immediately and untouched;
+     - a `prefers-reduced-motion` visitor never matches the query: same thing,
+       with no sequence to sit through;
+     - a visitor who has already seen the sequence in this session is given
+       "off" by that script, so a refresh paints the homepage rather than a flash
+       of black;
+     - a document whose app never arrived is marked "stalled" by the script's
+       safety net, which puts the overlay back out of the box and releases the
+       page's own pre-state above — nobody waits behind a curtain for a bundle
+       that is never coming.
+
+   The sequence's own cast — the wordmark, the skip button, the trail and the
+   star — carries `data-hero-enter` like the hero's copy does, so the rule above
+   is their opening frame too: invisible, which is exactly what a black screen
+   with nothing on it looks like. */
+#filmarc-intro {
+  display: none;
+}
+
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  html[data-intro="play"] #filmarc-intro {
+    display: block;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -118,9 +227,11 @@ body {
 }
 
 /* Respect the OS "reduce motion" setting.
-   The hero's scroll sequence (GSAP timelines, pinning, Lenis smoothing) is
-   switched off in JavaScript — see the `gsap.matchMedia()` blocks in
-   components/HeroSection.tsx. This block is the CSS half: no decorative transitions, no smooth scrolling. */
+   The hero's entrance timeline (GSAP timelines inside `gsap.matchMedia()`) is
+   switched off in JavaScript — see components/Home/HeroSection.tsx — and the
+   entrance's pre-state above is gated on the same query, so a reduced-motion
+   visitor gets the hero already in place rather than one waiting to animate in.
+   This block is the CSS half: no decorative transitions, no smooth scrolling. */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

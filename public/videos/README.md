@@ -1,4 +1,4 @@
-﻿# Showreel video (public/videos)
+# Showreel video (public/videos)
 
 The hero plays **one** video file. Its source is declared once in `lib/media.ts`
 (`REEL_SRC`) and consumed by `components/ShowreelVideo.tsx`.
@@ -12,7 +12,7 @@ The hero plays **one** video file. Its source is declared once in `lib/media.ts`
 
 Change `REEL_SRC` in `lib/media.ts` to point at the current master, or replace
 the file in `public/media/` in place. Nothing else in the app changes: the video
-element, the poster and the reveal animation all read from that one constant.
+element reads that one constant.
 
 ## Export guidance
 
@@ -27,13 +27,17 @@ Keep the reel web-optimised:
 | Bitrate    | 4-8 Mbps, target <= 8 MB total              |
 | Faststart  | yes (`-movflags +faststart` when encoding)  |
 
-Nothing else in the app needs changing: the same path is used for autoplay, loop,
-muted and `playsInline` playback, and the reveal mask simply clips the footage.
+Nothing else in the app needs changing: the same path is used for autoplay,
+loop, muted and `playsInline` playback, and the hero's copy layer simply sits on
+top of it.
 
 ## Behaviour
 
 - Autoplay / loop / muted / `playsInline`; never relies on audio.
+- Covers the whole hero viewport with `object-fit: cover`, cropped from the
+  centre — never stretched, never letterboxed, never framed in a card.
 - Decoded only while the hero is on screen (paused when scrolled past).
-- The poster frame (`/images/filmarc-showreel-poster.jpg`) covers loading, and
-  the stage's void colour covers a missing or unplayable file.
+- No poster layer: no still has been delivered, and a path to a missing file
+  would 404 on every load. The hero's own void colour and scrim cover the first
+  frames instead.
 

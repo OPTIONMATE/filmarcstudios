@@ -1,50 +1,54 @@
 ﻿This is a [Next.js](https://nextjs.org) project bootstrapped with [create-next-app](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Filmarc Studios — hero experience
+## Filmarc Studios — the hero
 
-The landing page is built around a full-screen cinematic showreel that is
-revealed by a scroll-driven wipe.
+The landing page opens on one immersive scene: the studio reel plays full-bleed
+behind a transparent navbar, a bold condensed headline, one line of copy and a
+single yellow call to action.
 
 | Piece | Where |
 | ----- | ----- |
-| Hero structure, scroll pin, copy layers | components/HeroSection.tsx |
-| Reusable video background (poster, playback, fallbacks) | components/ShowreelVideo.tsx |
-| Scroll-linked wipe rectangle | components/HeroSection.tsx |
-| Minimal fixed navigation | components/Navbar.tsx |
-| Section the page continues into | components/StudioSection.tsx |
+| Hero scene (layering, copy, entrance timeline) | components/Home/HeroSection.tsx |
+| Full-bleed background reel | components/ShowreelVideo.tsx |
+| Transparent navbar + mobile menu | components/Navbar.tsx |
+| Section the page continues into | components/Home/Section2.tsx |
 | Asset paths + export guidance | lib/media.ts |
 | Every colour and typeface token | pp/globals.css |
 
 How it works:
 
-- A tall .hero-track section (300vh) contains a CSS sticky 100svh frame, so
-  the hero is pinned while the track scrolls past it.
-- The reel is the base layer of the hero: one <video>, mounted once, never
-  remounted and never resized, playing muted/looping from the first paint. It is
-  on the initial screen — there is no "reel arrives after the wipe" stage.
-- A GSAP timeline drives a flat colour rectangle that scales from the centre.
-  At rest it is scale(0); on scroll it grows to fill the viewport, covering the
-  reel and revealing the hero content. All animation writes CSS transforms, so
-  scrolling never re-renders React.
-- The headline leaves, a minimal content layer arrives over the full-frame reel,
-  and scrolling backwards reverses everything; after the track, normal scrolling
-  continues into the next section.
+- One `min-h-svh` section holds the whole scene. Its layers, bottom to top: the
+  reel (`ShowreelVideo`), the scrim (`hero-scrim`, declared in app/globals.css),
+  the copy, and — outside the section, fixed at `z-50` — the navbar.
+- The reel is the base layer: one `<video>`, mounted once, never remounted and
+  never resized, covering the viewport with `object-cover` and playing
+  muted/looping from the first paint. The navbar floats over it instead of
+  pushing it down, and the video is never framed in a card or a rounded box.
+- The copy — condensed display headline, one sentence, the yellow CTA — is
+  centred on the viewport, with padding that keeps it clear of the bar.
+- A single GSAP entrance timeline reveals the headline lines, then the
+  description, then the CTA. It is built inside `gsap.matchMedia()` under
+  "(prefers-reduced-motion: no-preference)" and reverted on cleanup, so
+  reduced-motion visitors get the static hero and StrictMode cannot leave a
+  duplicate timeline behind. The copy carries no hidden resting state in the
+  markup: with animation disabled it is simply visible.
 
-### Showreel and poster assets
+### Showreel assets
 
 The reel source is declared once in lib/media.ts (REEL_SRC) and currently
 points at the video that already ships in this repository:
 
-`
+```
 public/media/samplevideo.mp4                # in use today (REEL_SRC)
 public/videos/filmarc-showreel.mp4          # reserved path for the graded master
-public/images/filmarc-showreel-poster.jpg   # 1920x1080 JPEG, not delivered yet
-`
+```
 
 Change REEL_SRC — or replace the file in place — to swap reels; no component
 edits are needed. See public/videos/README.md and public/images/README.md.
-Until the poster lands, the hero falls back to the stage's void colour, and
-prefers-reduced-motion visitors get a static frame with no pinned scroll track.
+
+There is no poster frame in the manifest: no still has been delivered, and a
+path pointing at a file that does not exist would 404 on every load. The hero
+paints its own void colour plus the scrim while the first frames decode.
 
 ## Getting Started
 

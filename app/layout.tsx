@@ -27,13 +27,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col bg-void font-body text-chalk">
-        {/* Lenis wraps the whole document: the hero's pin and every future
-            scroll animation share one smoothed scroll offset. */}
+    <html lang="en" suppressHydrationWarning className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}>
+      <body suppressHydrationWarning className="flex min-h-full flex-col bg-void font-body text-chalk">
+        {/* Lenis wraps the whole document: every scroll animation on the page
+            shares one smoothed scroll offset. */}
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

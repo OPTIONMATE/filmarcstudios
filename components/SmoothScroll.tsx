@@ -15,12 +15,12 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
  * Lenis is deliberately *not* given its own animation loop: `gsap.ticker` calls
  * `raf()` and every Lenis frame calls `ScrollTrigger.update()`. That is the only
  * way to stop the two engines fighting over the scroll position — and it keeps
- * the rectangle grow in the hero in step with the smoothed offset (GSAP ticks in
+ * any scroll-linked animation in step with the smoothed offset (GSAP ticks in
  * seconds, Lenis expects milliseconds).
  *
  * Visitors who have asked for reduced motion get the browser's own scrolling:
- * nothing is smoothed, and nothing downstream is pinned (see the
- * `gsap.matchMedia()` block in components/HeroSection.tsx).
+ * nothing is smoothed, and no entrance or scroll-linked animation runs (see the
+ * `gsap.matchMedia()` block in components/Home/HeroSection.tsx).
  */
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);

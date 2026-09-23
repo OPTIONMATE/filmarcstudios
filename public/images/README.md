@@ -1,22 +1,26 @@
-﻿# Hero imagery (public/images)
+# Hero imagery (public/images)
 
 | Asset path                              | Used by                                        |
 | --------------------------------------- | ---------------------------------------------- |
-| `/images/filmarc-showreel-poster.jpg`   | `components/ShowreelVideo.tsx` (poster frame)  |
+| `/images/filmarc-showreel-poster.jpg`   | *nothing* — reserved for a future poster frame |
 
-## Status: not delivered yet
+## Status: not delivered, and deliberately not referenced
 
-The hero already plays the reel (`lib/media.ts` → `REEL_SRC`); the poster frame is
-still outstanding, so this path is a placeholder. It is declared once in
-`lib/media.ts` (`SHOWREEL.poster.src`) and is used for:
+The hero plays the reel (`lib/media.ts` → `REEL_SRC`) directly, and no still has
+been delivered. `lib/media.ts` therefore declares **no** poster path and
+`components/ShowreelVideo.tsx` renders no poster layer: a path pointing at a file
+that does not exist would 404 on every load, for a frame nobody would see anyway.
 
-- the `<video poster>` attribute — what the visitor sees while the clip loads;
-- a background layer behind the video — what the visitor sees if playback fails.
+What the visitor sees while the first frames decode:
 
-Because it is painted as a CSS background, a missing file degrades silently to
-the stage's void colour — no broken
-image icon, no layout shift. Nothing in the code needs editing once the file
-lands here.
+- the hero section's own background (`bg-void`), and
+- the `hero-scrim` tint layered over it (app/globals.css).
+
+## Adding the poster back
+
+1. Drop a still at the path above.
+2. Add it to `SHOWREEL` in `lib/media.ts`.
+3. Pass it to the video's `poster` attribute in `components/ShowreelVideo.tsx`.
 
 ## Export guidance
 
