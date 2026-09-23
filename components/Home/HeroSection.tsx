@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from "react";
 
+import CubeText from "@/components/CubeText";
 import ShowreelVideo from "@/components/ShowreelVideo";
 import { gsap } from "@/lib/gsap";
 import { releaseEntrance } from "@/lib/heroEntrance";
@@ -282,16 +283,17 @@ export default function HeroSection() {
           {DESCRIPTION}
         </p>
 
-        {/* The one bright surface in the hero. Hover and focus only touch the
-            fill's brightness and the outline, so nothing here fights the
-            entrance timeline's transform. */}
+        {/* The one bright surface in the hero. The background stays put while
+            only the label flips inside its clip; the flip owns the
+            label's inner spans, the entrance owns the anchor, so the two
+            timelines never touch the same element. */}
         <a
           ref={ctaRef}
           data-hero-enter
           href={CTA.href}
           className="mt-8 inline-flex items-center justify-center rounded-full bg-cta px-7 py-3.5 font-body text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta sm:mt-10 sm:px-9 sm:py-4 sm:text-xs"
         >
-          {CTA.label}
+          <CubeText label={CTA.label} />
         </a>
       </div>
     </section>

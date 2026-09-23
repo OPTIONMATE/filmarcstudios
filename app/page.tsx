@@ -1,6 +1,6 @@
 import FilmArcIntro from "@/components/Intro/FilmArcIntro";
 import HeroSection from "@/components/Home/HeroSection";
-import Section2 from "@/components/Home/Section2";
+import ServicesSection from "@/components/Home/ServicesSection";
 import Navbar from "@/components/Navbar";
 
 export default function Home() {
@@ -15,9 +15,9 @@ export default function Home() {
       <Navbar />
       <main className="flex flex-1 flex-col">
         {/* The hero is the whole scene: the fixed navbar floats over it, and the
-          page continues into the next section. */}
+          page continues into the services timeline. */}
         <HeroSection />
-        <Section2 />
+        <ServicesSection />
       </main>
     </>
   );

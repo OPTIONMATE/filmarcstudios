@@ -120,6 +120,133 @@
   font-size: 0.75em;
 }
 
+/* --------------------------------------------------------------------------
+   SERVICES TIMELINE (components/Home/ServicesSection.tsx).
+   Centre rail on desktop, left rail on mobile; yellow progress fill grows
+   via GSAP scaleY. Node states are pure classes toggled by one ScrollTrigger:
+   upcoming (dimmed ~30%), active (full + yellow marker), complete (full).
+   -------------------------------------------------------------------------- */
+
+.services-track {
+  --services-rail-x: 11px;
+  --services-dot: 13px;
+}
+
+@media (min-width: 48rem) {
+  .services-track {
+    --services-rail-x: 50%;
+    --services-dot: 15px;
+  }
+}
+
+.services-rail,
+.services-progress {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--services-rail-x);
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.services-rail {
+  background-color: var(--filmarc-hairline);
+}
+
+.services-progress {
+  background-color: var(--filmarc-cta);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--filmarc-cta) 55%, transparent);
+}
+
+.services-marker {
+  position: absolute;
+  top: 50%;
+  left: var(--services-rail-x);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.services-marker__dot {
+  width: var(--services-dot);
+  height: var(--services-dot);
+  border-radius: 999px;
+  border: 2px solid var(--filmarc-smoke);
+  background-color: var(--filmarc-abyss);
+  transition:
+    border-color 0.45s ease,
+    background-color 0.45s ease,
+    box-shadow 0.45s ease,
+    transform 0.45s ease;
+}
+
+.services-node {
+  transition: opacity 0.5s ease;
+}
+
+.services-node.is-upcoming {
+  opacity: 0.3;
+}
+
+.services-node.is-active,
+.services-node.is-complete {
+  opacity: 1;
+}
+
+.services-node.is-active .services-marker__dot {
+  border-color: var(--filmarc-cta);
+  background-color: var(--filmarc-cta);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--filmarc-cta) 22%, transparent);
+  transform: scale(1.15);
+}
+
+.services-node.is-complete .services-marker__dot {
+  border-color: var(--filmarc-cta);
+  background-color: var(--filmarc-cta);
+}
+
+/* Serpentine connectors: a short horizontal tick from the rail to the
+   content side, alternating left/right per node on desktop. Pure CSS —
+   no SVG measuring, no overflow risk, resizes for free. */
+.services-node__link {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  display: none;
+  width: clamp(1.5rem, 4vw, 4rem);
+  height: 2px;
+  background-color: var(--filmarc-hairline);
+  pointer-events: none;
+  transition: background-color 0.45s ease;
+}
+
+@media (min-width: 48rem) {
+  .services-node__link {
+    display: block;
+  }
+  .services-node[data-side="left"] .services-node__link {
+    left: calc(50% + 8px);
+  }
+  .services-node[data-side="right"] .services-node__link {
+    right: calc(50% + 8px);
+  }
+  .services-node.is-active .services-node__link,
+  .services-node.is-complete .services-node__link {
+    background-color: color-mix(in srgb, var(--filmarc-cta) 65%, transparent);
+  }
+}
+
+.services-fallback {
+  border-radius: 0.5rem;
+  border: 1px solid var(--filmarc-hairline);
+  background-color: var(--filmarc-ink);
+}
+
 /* The hero entrance's opening frame — the half of the handoff that has to exist
    before any JavaScript runs (see lib/heroEntrance.ts).
 
@@ -224,6 +351,49 @@ body {
 ::selection {
   background-color: color-mix(in srgb, var(--filmarc-ember) 70%, transparent);
   color: var(--filmarc-chalk);
+}
+
+/* --------------------------------------------------------------------------
+   CUBE TEXT — the 3D text flip (components/CubeText.tsx).
+   A perspective wrapper, an overflow-hidden viewport sized by the in-flow
+   front face, and an absolutely-stacked identical copy parked below the
+   clip. GSAP owns every transform from mount (yPercent / rotationX), so the
+   CSS only declares layout: no transitions here, never a competing source
+   of motion. Typography, letter-spacing and alignment inherit from the
+   parent button or link, and `white-space: nowrap` keeps both faces the
+   same width so the copy can never wrap out of alignment.
+   -------------------------------------------------------------------------- */
+
+.cube-text {
+  display: inline-block;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.cube-text__viewport {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding-block: 0.08em;
+  margin-block: -0.08em;
+  vertical-align: baseline;
+}
+
+.cube-text__face {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: auto;
+}
+
+.cube-text__face--copy {
+  position: absolute;
+  inset: 0.08em 0;
+  display: block;
+  text-align: inherit;
+  /* Parked below the clip before GSAP mounts (no-JS: front simply covers it,
+     since both faces share the exact same box and type). GSAP's
+     yPercent: 100 set() takes over from this identical value on mount. */
+  transform: translateY(100%);
 }
 
 /* Respect the OS "reduce motion" setting.

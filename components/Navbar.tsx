@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import CubeText from "@/components/CubeText";
 import { gsap } from "@/lib/gsap";
 import { releaseEntrance } from "@/lib/heroEntrance";
 import { whenEntranceGateOpens } from "@/lib/introGate";
@@ -210,7 +211,7 @@ export default function Navbar() {
                 href={link.href}
                 className="block rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
               >
-                {link.label}
+                <CubeText label={link.label} />
               </a>
             </li>
           ))}
@@ -224,7 +225,7 @@ export default function Navbar() {
             href={START_HREF}
             className="rounded-full bg-cta px-5 py-3 font-body text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
           >
-            Get started
+            <CubeText label="Get started" />
           </a>
         </div>
 
@@ -268,7 +269,7 @@ export default function Navbar() {
                   onClick={closeMenu}
                   className="block border-b border-hairline py-4 font-display text-[2rem] uppercase tracking-[0.06em] text-bright"
                 >
-                  {link.label}
+                  <CubeText label={link.label} />
                 </a>
               </li>
             ))}
@@ -279,7 +280,7 @@ export default function Navbar() {
             onClick={closeMenu}
             className="mt-8 inline-flex items-center justify-center rounded-full bg-cta px-7 py-4 font-body text-xs font-semibold uppercase tracking-[0.16em] text-cta-ink"
           >
-            Get started
+            <CubeText label="Get started" />
           </a>
         </div>
       ) : null}
