@@ -209,9 +209,12 @@ export default function Navbar() {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="block rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
+                className="inline-flex items-center rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
               >
-                <CubeText label={link.label} />
+                <CubeText
+                  label={link.label}
+                  className="relative top-[0.214em]"
+                />
               </a>
             </li>
           ))}
@@ -223,9 +226,12 @@ export default function Navbar() {
         <div className="hidden items-center xl:flex">
           <a
             href={START_HREF}
-            className="rounded-full bg-cta px-5 py-3 font-body text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
+            className="inline-flex items-center rounded-full bg-cta px-5 py-3 font-body text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
           >
-            <CubeText label="Get started" />
+            <CubeText
+              label="Get started"
+              className="relative top-[0.214em]"
+            />
           </a>
         </div>
 
