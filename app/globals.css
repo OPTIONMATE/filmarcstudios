@@ -29,6 +29,16 @@
   --filmarc-amber: #ffb347;
   --filmarc-cyan: #35d6f5;
   --filmarc-violet: #7a5cff;
+  /* Electric blue — the services cards' hover ink (the one place a service
+     name leaves white). Deep enough to read on the near-black backdrop. */
+  --filmarc-electric: #00a3ff;
+
+  /* --- Footer wordmark (components/Footer.tsx) -------------------------- */
+  /* The giant FILMARC is the page's last scene. Its ink is deeper and cooler
+     than the UI accents above — which is why it is its own token rather than a
+     re-tint of --filmarc-cyan / --filmarc-violet / --filmarc-electric. Only the
+     footer wordmark's own rule consumes it (see the FOOTER block below). */
+  --filmarc-wordmark-blue: #0878f9;
 
   /* --- Hero + navigation ------------------------------------------------ */
   /* The hero sits on moving footage, so its copy is pure white rather than the
@@ -66,6 +76,7 @@
   --color-amber: var(--filmarc-amber);
   --color-cyan: var(--filmarc-cyan);
   --color-violet: var(--filmarc-violet);
+  --color-electric: var(--filmarc-electric);
   --color-hairline: var(--filmarc-hairline);
   --color-overlay-soft: var(--filmarc-overlay-soft);
   --color-overlay-mid: var(--filmarc-overlay-mid);
@@ -83,6 +94,7 @@
   --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bebas-neue), "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-wordmark: var(--font-honk), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* --------------------------------------------------------------------------
@@ -247,6 +259,76 @@
   background-color: var(--filmarc-ink);
 }
 
+/* --------------------------------------------------------------------------
+   FOOTER (components/Footer.tsx) — the giant FILMARC and its band.
+   One word, one layer, one smooth arrival.
+
+   The band owns the type, the tracking and the size. The fit pass in the
+   component writes `--footer-wordmark-size` (in px) from the width the band
+   actually has, so on every screen — phone to ultrawide — the word is set to
+   exactly that width; every metric below is expressed in that one size, so no
+   layer can ever disagree with another about how big the wordmark is. The
+   fallback value does the same sum in CSS for a visitor without JavaScript.
+   -------------------------------------------------------------------------- */
+
+.site-footer {
+  /* One gutter for the whole footer — the wordmark band, the social bar and the
+     legal row all start and end on the same line. It lives here rather than in
+     three sets of padding utilities because the wordmark's fallback size below
+     is derived from it. Same rhythm as the page's own sections (`px-6` /
+     `sm:px-10`, i.e. Tailwind's 40rem). */
+  --footer-gutter: 1.5rem;
+}
+
+@media (min-width: 40rem) {
+  .site-footer {
+    --footer-gutter: 2.5rem;
+  }
+}
+
+.footer-gutter {
+  padding-inline: var(--footer-gutter);
+}
+
+.footer-wordmark {
+  /* `FILMARC` in Honk at these settings is this many em wide — measured in a
+     browser, then recorded, which is what lets the no-JavaScript fallback land
+     on the same width the fit pass computes. */
+  --footer-wordmark-ratio: 3.262;
+  /* `100vw` includes any scrollbar, so this fallback can only ever come out a
+     hair too large — never too small; the footer clips its own horizontal
+     overflow, so "too large" cannot become a scrollbar. */
+  --footer-wordmark-size: calc(
+    (100vw - 2 * var(--footer-gutter)) / var(--footer-wordmark-ratio)
+  );
+  /* A little air above and below the word, scaled to its own size so the band
+     holds the same proportion on a phone and on an ultrawide. */
+  padding-block: calc(var(--footer-wordmark-size) * 0.06);
+}
+
+/* The word itself. `max-content` is what makes the width measurable: it keeps
+   the box on the word's own advance instead of on the band's. */
+.footer-wordmark__text {
+  display: block;
+  width: max-content;
+  font-family: var(--font-wordmark);
+  font-size: var(--footer-wordmark-size);
+  /* Honk is a one-weight face: asking for 800 would make the browser fake-bold
+     it and smear the counters, so the wordmark takes the real 400 and all of
+     its presence comes from its size. */
+  font-weight: 400;
+  /* Both of Honk's axes, pinned rather than left to the face's defaults: MORF
+     0 is its cleanest, least wobbly cut and SHLN 0 stands it upright, so the
+     word reads as one straight monumental word rather than a leaning one. The
+     fit pass below measures exactly these metrics. */
+  font-variation-settings: "MORF" 0, "SHLN" 0;
+  line-height: 0.84;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--filmarc-wordmark-blue);
+}
+
 /* The hero entrance's opening frame — the half of the handoff that has to exist
    before any JavaScript runs (see lib/heroEntrance.ts).
 
@@ -349,8 +431,8 @@ body {
 }
 
 ::selection {
-  background-color: color-mix(in srgb, var(--filmarc-ember) 70%, transparent);
-  color: var(--filmarc-chalk);
+  background-color: var(--filmarc-cta);
+  color: var(--filmarc-abyss);
 }
 
 /* --------------------------------------------------------------------------

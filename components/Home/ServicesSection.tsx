@@ -23,13 +23,27 @@ import { services } from "@/components/Home/services";
  *   3. CTA      a typography-led closer in the same two-tier hero style.
  *
  * Motion details:
- * - The track holds two identical halves; the tween runs `xPercent: 0 → -50`
- *   with `repeat: -1`, so the seam never shows regardless of item count.
- * - Duration is derived from the measured half-width (`px / pxPerSecond`) so
- *   the on-screen velocity stays cinematic at any width or item count.
- * - Hover / keyboard focus eases `timeScale` 1 → 0.12 (and back), never a
- *   hard pause. Touch devices simply keep the default speed.
- * - `prefers-reduced-motion` renders everything static: no tween, no reveals.
+ * - The track holds two identical halves; a ticker advances `pos` in px and
+ *   wraps it modulo one half-width, so the row stays filled and the seam never
+ *   shows regardless of item count. (A plain `xPercent: -50, repeat: -1` tween
+ *   cannot reverse cleanly, so px + wrap is used instead.)
+ * - The loop is driven by the page's vertical scroll *direction*: scrolling
+ *   down travels one way (cards left), scrolling up travels the other (cards
+ *   right), and the velocity eases between the two — a reversal is a change of
+ *   speed, never a jump, and the track's offset is never reset. Scroll speed
+ *   sets the magnitude, so a flick is faster than a nudge.
+ * - The direction is *latched*: when the page stops moving, the loop keeps
+ *   travelling the way it was last asked to and only the extra scroll speed
+ *   decays back to the resting drift — it never flips back on its own until the
+ *   visitor scrolls the other way.
+ * - Hovering the row eases that drift down for readability while the scroll
+ *   direction keeps working.
+ * - Hovering a single card turns only that card's service name electric blue
+ *   (`group-hover:text-electric`, no React state, no re-render).
+ * - The section heading enters exactly like the hero's headline, only on scroll
+ *   in: every character its own `inline-block` span, one behind the next, same
+ *   24px rise, 0.68s duration, 0.026s stagger step and `power3.out` ease.
+ * - `prefers-reduced-motion` renders everything static: no ticker, no reveals.
  * - Everything lives in one `gsap.context` scoped to the section, so
  *   StrictMode remounts and unmounts clean up fully.
  */
@@ -63,15 +77,29 @@ const CTA_LABEL = "Something else in mind?";
  * One word in the hero's two-tier style: the first letter at the heading's
  * own size (`heading-initial`), the rest at 75% (`heading-rest`), on one
  * baseline — the exact utilities HeroSection uses.
+ *
+ * Every character gets its own `inline-block` span for the same reason the
+ * hero's headline does (components/Home/HeroSection.tsx): the entrance is
+ * staggered per character. The split happens during render, so the server's
+ * HTML already holds one span per character — the word is never painted in one
+ * form and re-split on the client. The word itself is atomic, so a narrow
+ * screen can never break a word between two of its characters.
  */
 function HeroStyleWord({ word }: { word: string }) {
-  const [first, ...rest] = [...word];
   return (
     <span className="inline-block">
-      <span className="heading-initial inline-block">{first}</span>
-      {rest.length > 0 ? (
-        <span className="heading-rest inline-block">{rest.join("")}</span>
-      ) : null}
+      {[...word].map((character, characterIndex) => (
+        <span
+          key={`${word}-${characterIndex}`}
+          /* The stagger's marker (see the effect below). */
+          data-services-char
+          className={`inline-block ${
+            characterIndex === 0 ? "heading-initial" : "heading-rest"
+          }`}
+        >
+          {character}
+        </span>
+      ))}
     </span>
   );
 }
@@ -120,7 +148,17 @@ const COPIES_PER_HALF = 3;
 const PX_PER_SECOND = 140;
 
 /** Hover resting speed, as a fraction of the default. */
-const HOVER_TIMESCALE = 0.12;
+const HOVER_DRIFT_SCALE = 0.12;
+
+/** Scroll-velocity gain and clamp for the scroll-driven speed (px/s). */
+const SCROLL_BOOST_GAIN = 1.1;
+const SCROLL_BOOST_MAX = 1400;
+
+/** How fast a scroll-driven speed boost settles back to the resting speed. */
+const SCROLL_SPEED_DECAY = 1.6;
+
+/** How fast the loop's velocity chases the scroll-derived target. */
+const VELOCITY_EASE = 4;
 
 export default function ServicesSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -135,7 +173,8 @@ export default function ServicesSection() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const ctx = gsap.context(() => {
-      /* Entrance — heading, carousel and CTA rise once on scroll in. */
+      /* Entrance — the eyebrow, carousel and CTA rise once on scroll in. (The
+         headings are owned by the character stagger below instead.) */
       const reveals = gsap.utils.toArray<HTMLElement>(
         "[data-services-reveal]",
         section,
@@ -151,41 +190,131 @@ export default function ServicesSection() {
         });
       });
 
-      /* Marquee — one infinite tween, rebuilt only on resize / font load. */
-      let marquee: gsap.core.Tween | null = null;
-      let hoverTarget = 1;
-
-      const buildMarquee = () => {
-        marquee?.kill();
-        gsap.set(track, { xPercent: 0 });
-        const halfWidth = track.scrollWidth / 2;
-        if (halfWidth <= 0) return;
-        marquee = gsap.to(track, {
-          xPercent: -50,
-          ease: "none",
-          duration: Math.max(12, halfWidth / PX_PER_SECOND),
-          repeat: -1,
-        });
-        marquee.timeScale(hoverTarget);
-      };
-
-      buildMarquee();
-
-      /* Hover slowdown — retarget the existing tween's velocity only. */
-      const canHover = window.matchMedia("(hover: hover)").matches;
-      const easeTo = (value: number, duration: number) => {
-        hoverTarget = value;
-        if (marquee) {
-          gsap.to(marquee, {
-            timeScale: value,
-            duration,
-            ease: "power2.out",
-            overwrite: true,
+      /* Headings — the hero's own character stagger, replayed on scroll in
+         instead of on load. Every character of a `[data-services-stagger]`
+         heading is its own inline-block span (see HeroStyleWord), so the
+         entrance is one character behind the next at the hero's exact timing:
+         the same 24px rise, the same 0.68s, the same 0.026s stagger step and
+         the same `power3.out` ease as the headline in the hero. Only transform
+         and opacity are touched — never a mask, never a layout property — so no
+         glyph can be clipped, and `once: true` retires each heading's trigger as
+         soon as it has played.
+         Unlike the hero, the opening frame is taken by `gsap.set` in this layout
+         effect rather than by a stylesheet pre-state: this heading is always
+         below the fold at first paint (the hero owns one full viewport), so the
+         assertion lands before the browser paints the hydrated tree and nothing
+         is ever seen flashing — the same reason the block reveals below hide
+         themselves here. */
+      const STAGGER_FROM = { opacity: 0, y: 24 } as const;
+      gsap.utils
+        .toArray<HTMLElement>("[data-services-stagger]", section)
+        .forEach((heading) => {
+          const characters = gsap.utils.toArray<HTMLElement>(
+            "[data-services-char]",
+            heading,
+          );
+          if (characters.length === 0) return;
+          gsap.set(characters, STAGGER_FROM);
+          gsap.to(characters, {
+            y: 0,
+            opacity: 1,
+            duration: 0.68,
+            stagger: 0.026,
+            ease: "power3.out",
+            scrollTrigger: { trigger: heading, start: "top 88%", once: true },
+            /* Hand both properties back to CSS once settled — no leftover
+               inline transforms or stacking contexts on 30-odd spans (the same
+               `clearProps` handback the hero's entrance ends with). */
+            onComplete: () => gsap.set(characters, { clearProps: "transform,opacity" }),
           });
-        }
+        });
+
+      /* Marquee — one persistent ticker-driven loop.
+         `pos` is the px offset wrapped into [0, halfWidth): the track holds two
+         identical halves, so wrapping keeps the row filled in *both*
+         directions and the seam never shows. The velocity is driven by the
+         page's vertical scroll direction — down travels one way, up the other —
+         and eases between the two, so a reversal never resets the offset. */
+      let halfWidth = 0;
+      let pos = 0;
+      let velocity = PX_PER_SECOND;
+      let targetVelocity = PX_PER_SECOND;
+      let driftScale = 1;
+      let driftScaleTarget = 1;
+
+      /* Scroll sampling. The direction is latched (default: the leftward travel
+         of a downward scroll) and only ever changes when the visitor scrolls
+         the other way; the sampled speed is a boost that decays afterwards. */
+      let lastScrollY = window.scrollY || 0;
+      let lastScrollTime = performance.now();
+      let scrollDir = 1;
+      let scrollSpeed = 0;
+
+      const render = () => {
+        if (halfWidth > 0) gsap.set(track, { x: -pos });
       };
-      const slow = () => easeTo(HOVER_TIMESCALE, 0.6);
-      const restore = () => easeTo(1, 0.9);
+
+      const measure = () => {
+        halfWidth = track.scrollWidth / 2;
+        if (halfWidth > 0) pos = pos % halfWidth;
+        render();
+      };
+
+      const onTick = (_time: number, deltaMS: number) => {
+        if (halfWidth <= 0) return;
+        const dt = Math.min(deltaMS / 1000, 0.05);
+        /* Hover eases the drift scale itself — no tween rebuilds, no jumps. */
+        driftScale += (driftScaleTarget - driftScale) * (1 - Math.exp(-dt * 5));
+
+        /* Resting speed the loop always returns to, in the latched direction. */
+        const resting = PX_PER_SECOND * driftScale;
+        /* A scroll boost is extra speed on top of that; it decays, never snaps. */
+        scrollSpeed *= Math.exp(-dt * SCROLL_SPEED_DECAY);
+        const driven =
+          Math.min(scrollSpeed * SCROLL_BOOST_GAIN, SCROLL_BOOST_MAX) *
+          driftScale;
+        targetVelocity = scrollDir * Math.max(resting, driven);
+        /* One eased velocity: reversal is a change of sign over ~250ms. */
+        velocity +=
+          (targetVelocity - velocity) * (1 - Math.exp(-dt * VELOCITY_EASE));
+
+        pos += velocity * dt;
+        /* Wrap in both directions — the duplicated halves make it seamless. */
+        pos %= halfWidth;
+        if (pos < 0) pos += halfWidth;
+        render();
+      };
+
+      measure();
+      gsap.ticker.add(onTick);
+
+      /* Scroll direction — measured from real position deltas, so it follows
+         Lenis smoothing instead of fighting it. Down travels one way (cards
+         left), up the other (cards right). The last direction is kept: after the
+         page stops, the row keeps travelling that way until a scroll in the
+         opposite direction flips it again. */
+      const onScroll = () => {
+        const now = performance.now();
+        const y = window.scrollY || 0;
+        const dt = Math.max((now - lastScrollTime) / 1000, 1 / 240);
+        const delta = y - lastScrollY;
+        lastScrollY = y;
+        lastScrollTime = now;
+        if (Math.abs(delta) < 0.5) return; /* sub-pixel noise */
+
+        scrollDir = delta > 0 ? 1 : -1;
+        scrollSpeed = Math.abs(delta) / dt;
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      /* Hover slowdown — retargets the drift scale only. */
+      const canHover = window.matchMedia("(hover: hover)").matches;
+      const slow = () => {
+        driftScaleTarget = HOVER_DRIFT_SCALE;
+      };
+      const restore = () => {
+        driftScaleTarget = 1;
+      };
 
       if (canHover) {
         viewport.addEventListener("mouseenter", slow);
@@ -194,11 +323,11 @@ export default function ServicesSection() {
         viewport.addEventListener("focusout", restore);
       }
 
-      /* Keep velocity consistent once fonts resolve and on resize. */
+      /* Keep measurements fresh once fonts resolve and on resize. */
       let resizeTimer: number | null = null;
       const onResize = () => {
         if (resizeTimer !== null) window.clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(buildMarquee, 200);
+        resizeTimer = window.setTimeout(measure, 200);
       };
       window.addEventListener("resize", onResize);
 
@@ -207,7 +336,7 @@ export default function ServicesSection() {
         document.fonts.ready
           .then(() => {
             if (!fontsCancelled) {
-              buildMarquee();
+              measure();
               ScrollTrigger.refresh();
             }
           })
@@ -218,14 +347,14 @@ export default function ServicesSection() {
         fontsCancelled = true;
         if (resizeTimer !== null) window.clearTimeout(resizeTimer);
         window.removeEventListener("resize", onResize);
+        window.removeEventListener("scroll", onScroll);
+        gsap.ticker.remove(onTick);
         if (canHover) {
           viewport.removeEventListener("mouseenter", slow);
           viewport.removeEventListener("mouseleave", restore);
           viewport.removeEventListener("focusin", slow);
           viewport.removeEventListener("focusout", restore);
         }
-        marquee?.kill();
-        marquee = null;
       };
     }, section);
 
@@ -243,7 +372,7 @@ export default function ServicesSection() {
       {half.map((service, index) => (
         <span
           key={`${service.id}-${index}`}
-          className="relative flex min-h-44 w-56 shrink-0 flex-col items-center justify-center border border-hairline bg-ink/60 px-5 pb-6 pt-12 text-center sm:min-h-48 sm:w-64 sm:px-6"
+          className="group relative flex min-h-44 w-56 shrink-0 flex-col items-center justify-center border border-hairline bg-ink/60 px-5 pb-6 pt-12 text-center sm:min-h-48 sm:w-64 sm:px-6"
         >
           {/* Index + lime marker — pinned to the card's top-right corner. */}
           <span className="absolute right-4 top-4 flex items-center gap-2 sm:right-5 sm:top-5">
@@ -252,7 +381,9 @@ export default function ServicesSection() {
             </span>
             <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 bg-cta" />
           </span>
-          <span className="whitespace-normal text-center font-display text-[1.65rem] uppercase leading-[0.9] tracking-[0.01em] text-bright sm:text-[2rem]">
+          {/* Only this card's name changes ink on hover — border, background,
+              index and diamond stay exactly as they are. */}
+          <span className="whitespace-normal text-center font-display text-[1.65rem] uppercase leading-[0.9] tracking-[0.01em] text-bright transition-colors duration-500 ease-out group-hover:text-electric group-focus-within:text-electric sm:text-[2rem]">
             {service.name}
           </span>
         </span>
@@ -268,9 +399,16 @@ export default function ServicesSection() {
       className="relative overflow-clip bg-void py-24 sm:py-32"
     >
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
-        {/* Eyebrow + heading — display type, deliberately below hero scale. */}
-        <div data-services-reveal className="text-center">
-          <p className="font-body text-[0.7rem] font-medium uppercase tracking-[0.32em] text-smoke">
+        {/* Eyebrow + heading — display type, deliberately below hero scale.
+            The eyebrow rises as one block; the heading below it is owned by the
+            character stagger instead (no block reveal on the wrapper, so the two
+            animations never compose), exactly as the hero splits its own
+            headline from the copy that follows it. */}
+        <div className="text-center">
+          <p
+            data-services-reveal
+            className="font-body text-[0.7rem] font-medium uppercase tracking-[0.32em] text-smoke"
+          >
             <span className="text-cta">01</span>
             <span aria-hidden className="mx-3 text-hairline">
               /
@@ -279,6 +417,7 @@ export default function ServicesSection() {
           </p>
           <h2
             id="services-heading"
+            data-services-stagger
             className="mt-5 font-display text-[clamp(2.75rem,6vw,5.5rem)] uppercase leading-[0.85] tracking-[0.01em] text-bright"
           >
             <HeroStyleHeading
