@@ -78,6 +78,9 @@ export default function CubeText({
     const ctx = gsap.context(() => {
       gsap.set(root, { perspective });
       gsap.set(front, {
+        /* y: 0 wipes the px value GSAP parses from the computed CSS transform
+           so yPercent is the single source of truth (no double offset). */
+        y: 0,
         yPercent: 0,
         rotationX: 0,
         transformOrigin: "50% 100%",
@@ -85,6 +88,12 @@ export default function CubeText({
         force3D: true,
       });
       gsap.set(back, {
+        /* The CSS fallback parks the copy with translateY(100%). Its computed
+           matrix reads back as y px — without y: 0 here the face would sit at
+           y(px) + yPercent(100%) = 200% and, after the flip, settle at
+           y(px) + yPercent(0%) = 100%: still below the clip, so nothing ever
+           "comes down". Resetting y keeps start = 100% and end = 0%. */
+        y: 0,
         yPercent: 100,
         rotationX: 70,
         transformOrigin: "50% 0%",
