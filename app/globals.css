@@ -448,7 +448,7 @@ body {
 
 
 .cube-text {
-  display: inline-block;
+  display: inline-flex;
   line-height: inherit;
   vertical-align: baseline;
 }

@@ -62,10 +62,20 @@ const START_HREF = "mailto:hello@filmarc.studio";
 const DESKTOP_QUERY = "(min-width: 80rem)";
 
 export default function Navbar() {
+  /* `menuOpen` is the intent (the button, Escape, breakpoint and links write
+     here); `menuMounted` is the render gate (the timeline alone unmounts on
+     reverse-complete). `menuClosing` is therefore derived: mounted but no
+     longer intended. This keeps two sources of state truthful instead of three
+     drifting apart. */
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuMounted, setMenuMounted] = useState(false);
+  const menuClosing = menuMounted && !menuOpen;
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   /** The bar itself — never the <header> wrapper. See the entrance effect. */
   const barRef = useRef<HTMLElement | null>(null);
+  /** The mobile panel and its open/close timeline. */
+  const menuPanelRef = useRef<HTMLDivElement | null>(null);
+  const menuTimelineRef = useRef<ReturnType<typeof gsap.timeline> | null>(null);
 
   /* ENTRANCE — the bar's half of the hero's introduction: a 10px rise and a
      fade on the same easing the copy uses, opening 0.02s ahead of the heading
@@ -138,11 +148,95 @@ export default function Navbar() {
     };
   }, []);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    /* A link tap only flips the intent: the mounted panel stays up until the
+       timeline's reverse-complete unmounts it. Reduced motion has no timeline,
+       so the unmount effect below handles that instant teardown. */
+    setMenuOpen(false);
+  };
+  const toggleMenu = () => setMenuOpen((open) => !open);
 
-  /* Escape closes the panel and hands focus back to the button that opened it. */
-  useEffect(() => {
+  /* Mount follows intent; unmount belongs to the timeline below (or, with no
+     timeline, the teardown effect further down). A mid-close reopen is
+     therefore just an intent flip back: the mounted panel never leaves. */
+  useIsomorphicLayoutEffect(() => {
     if (!menuOpen) return;
+    setMenuMounted(true);
+  }, [menuOpen]);
+
+  /* MOBILE MENU — mount the full-screen panel, drop it straight down from the
+     top, then stagger the links and CTA down behind it, one by one:
+       panel yPercent -100 → 0, `power4.out`, 0.55s;
+       items y -28px → 0 with 0 → 1 opacity, `power3.out`, 0.45s, 0.065s stagger.
+     The links' own CubeText flips are untouched: this moves only the panel and
+     the items that hold those links. Closing plays the same timeline in
+     reverse; only its reverse-complete unmounts. A mid-close reopen replays
+     forward without rebuilding. Reduced motion renders the finished menu with
+     no hidden state and no timeline. */
+  useIsomorphicLayoutEffect(() => {
+    if (!menuMounted) return;
+    const panel = menuPanelRef.current;
+    if (!panel) return;
+    const items = Array.from(panel.querySelectorAll("[data-menu-item]"));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(panel, { yPercent: -100 });
+      gsap.set(items, { y: -28, opacity: 0 });
+
+      const timeline = gsap.timeline({
+        onReverseComplete: () => {
+          menuTimelineRef.current = null;
+          setMenuMounted(false);
+        },
+      });
+      menuTimelineRef.current = timeline;
+      timeline.to(panel, {
+        yPercent: 0,
+        duration: 0.55,
+        ease: "power4.out",
+      });
+      timeline.to(
+        items,
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.45,
+          ease: "power3.out",
+          stagger: 0.065,
+        },
+        ">",
+      );
+      /* The opening state is a state change, not a mount artifact: start from a
+         reverse-complete close or a fresh mount in exactly the same frame. */
+      timeline.play(0);
+    }, panel);
+
+    return () => {
+      menuTimelineRef.current = null;
+      ctx.revert();
+    };
+  }, [menuMounted]);
+
+  /* Intent drives one timeline's direction, never a rebuild: open plays, close
+     reverses, and unmounting happens only in the timeline's own
+     reverse-complete above. */
+  useIsomorphicLayoutEffect(() => {
+    const timeline = menuTimelineRef.current;
+    if (!timeline) return;
+    if (menuClosing) {
+      timeline.reverse();
+    } else {
+      timeline.play();
+    }
+  }, [menuClosing]);
+
+  /* Escape closes the panel and hands focus back to the button that opened it.
+     Closing is intent-only: the direction effect reverses the timeline and its
+     reverse-complete unmounts; reduced motion has no timeline and unmounts in
+     the teardown effect below. */
+  useEffect(() => {
+    if (!menuMounted) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -152,7 +246,7 @@ export default function Navbar() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [menuOpen]);
+  }, [menuMounted]);
 
   /* Crossing the breakpoint must not leave a stale open panel sitting behind the
      now-visible inline navigation. */
@@ -160,12 +254,38 @@ export default function Navbar() {
     const desktop = window.matchMedia(DESKTOP_QUERY);
 
     const onChange = (event: MediaQueryListEvent) => {
-      if (event.matches) setMenuOpen(false);
+      if (!event.matches) return;
+      /* Instant teardown: the desktop nav is back, so there is nothing to
+         reverse into. */
+      menuTimelineRef.current?.kill();
+      menuTimelineRef.current = null;
+      setMenuMounted(false);
+      setMenuOpen(false);
     };
 
     desktop.addEventListener("change", onChange);
     return () => desktop.removeEventListener("change", onChange);
   }, []);
+
+  /* While the full-screen menu is mounted the page behind it must not scroll:
+     Lenis needs the gesture, and the body needs the lock. */
+  useEffect(() => {
+    if (!menuMounted) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menuMounted]);
+
+  /* Reduced-motion (or otherwise timeline-free) closes have nothing to reverse:
+     unmount the finished menu as soon as the logical state flips shut. The
+     animated close unmounts in the timeline's own reverse-complete callback. */
+  useEffect(() => {
+    if (menuOpen) return;
+    if (menuTimelineRef.current) return;
+    setMenuMounted(false);
+  }, [menuOpen]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -211,10 +331,7 @@ export default function Navbar() {
                 href={link.href}
                 className="inline-flex items-center rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
               >
-                <CubeText
-                  label={link.label}
-                  className="relative top-[0.214em]"
-                />
+                <CubeText label={link.label} />
               </a>
             </li>
           ))}
@@ -228,10 +345,7 @@ export default function Navbar() {
             href={START_HREF}
             className="inline-flex items-center rounded-full bg-cta px-5 py-3 font-body text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
           >
-            <CubeText
-              label="Get started"
-              className="relative top-[0.214em]"
-            />
+            <CubeText label="Get started" />
           </a>
         </div>
 
@@ -239,41 +353,42 @@ export default function Navbar() {
         <button
           ref={menuButtonRef}
           type="button"
-          aria-expanded={menuOpen}
+          aria-expanded={menuMounted}
           aria-controls="primary-menu"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={menuMounted ? "Close menu" : "Open menu"}
+          onClick={toggleMenu}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-overlay-soft text-bright backdrop-blur-md transition-colors hover:bg-overlay-mid focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta xl:hidden"
         >
           {/* Two bars that become the close cross. */}
           <span aria-hidden className="relative block h-3 w-4">
             <span
               className={`absolute top-0.5 left-0 h-0.5 w-full rounded-full bg-current transition duration-300 ${
-                menuOpen ? "translate-y-[3px] rotate-45" : ""
+                menuMounted ? "translate-y-[3px] rotate-45" : ""
               }`}
             />
             <span
               className={`absolute bottom-0.5 left-0 h-0.5 w-full rounded-full bg-current transition duration-300 ${
-                menuOpen ? "-translate-y-[3px] -rotate-45" : ""
+                menuMounted ? "-translate-y-[3px] -rotate-45" : ""
               }`}
             />
           </span>
         </button>
       </nav>
 
-      {menuOpen ? (
+      {menuMounted ? (
         <div
+          ref={menuPanelRef}
           id="primary-menu"
           data-lenis-prevent
           className="fixed inset-0 overflow-y-auto overscroll-contain bg-void/95 px-6 pt-24 pb-12 backdrop-blur-xl xl:hidden"
         >
-          <ul className="flex flex-col">
+          <ul className="flex flex-col items-center text-center">
             {NAV_LINKS.map((link) => (
-              <li key={link.href}>
+              <li key={link.href} data-menu-item className="flex w-full justify-center">
                 <a
                   href={link.href}
                   onClick={closeMenu}
-                  className="block border-b border-hairline py-4 font-display text-[2rem] uppercase tracking-[0.06em] text-bright"
+                  className="flex w-full items-center justify-center border-b border-hairline py-4 text-center font-display text-[2rem] uppercase tracking-[0.06em] text-bright"
                 >
                   <CubeText label={link.label} />
                 </a>
@@ -281,13 +396,15 @@ export default function Navbar() {
             ))}
           </ul>
 
-          <a
-            href={START_HREF}
-            onClick={closeMenu}
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-cta px-7 py-4 font-body text-xs font-semibold uppercase tracking-[0.16em] text-cta-ink"
-          >
-            <CubeText label="Get started" />
-          </a>
+          <div data-menu-item className="flex w-full justify-center">
+            <a
+              href={START_HREF}
+              onClick={closeMenu}
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-cta px-7 py-4 font-body text-xs font-semibold uppercase tracking-[0.16em] text-cta-ink"
+            >
+              <CubeText label="Get started" />
+            </a>
+          </div>
         </div>
       ) : null}
     </header>
