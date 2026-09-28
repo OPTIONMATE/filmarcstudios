@@ -6,57 +6,67 @@
  * array and needs no other changes.
  *
  * Descriptions are concise supporting copy, not claims about specific
- * completed projects. Media paths are placeholders until graded stills are
- * delivered; swap `image` for the final asset per service.
+ * completed projects. Every `image` is a still that ships in this repository
+ * (public/images/services/, documented in public/images/README.md), so the
+ * showcase depends on no third-party host: swap the file in place, or point
+ * `image` at a delivered graded still, and nothing else changes.
  */
 
 export interface Service {
   id: string;
   name: string;
+  tagline: string;
   description: string;
+  deliverables: readonly string[];
   image: string;
 }
 
 export const services: Service[] = [
   {
     id: "vfx",
-    name: "VFX",
+    name: "VFX & Compositing",
+    tagline: "The invisible craft that makes the impossible feel captured on glass.",
     description:
-      "Visual effects, compositing, cleanup and seamless integration — the invisible craft that makes the impossible feel photographed.",
-    image:
-      "https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1400&q=85",
+      "Photoreal visual effects, multi-pass compositing, clean plate reconstruction, crowd extension, and seamless digital environment work.",
+    deliverables: ["Multi-layer comp", "Set extension", "Rotoscopy & prep", "Photoreal CGI integration"],
+    image: "/images/services/vfx.jpg",
   },
   {
     id: "cgi",
-    name: "CGI",
+    name: "CGI & Lookdev",
+    tagline: "Synthetic realms and digital assets crafted from first wireframe to light bounce.",
     description:
-      "Photorealistic or stylized computer-generated imagery and worlds, built from first pixel to final frame.",
-    image:
-      "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1400&q=85",
+      "Hard-surface vehicle rigs, creature sculpting, atmospheric dynamics, and physically-accurate lighting passes for narrative cinema.",
+    deliverables: ["Houdini dynamics", "Creature animation", "Environment builds", "Lookdev & lighting"],
+    image: "/images/services/cgi.jpg",
   },
   {
     id: "2d-animation",
     name: "2D Animation",
+    tagline: "Handcrafted movement and distinctive illustration-led storytelling.",
     description:
-      "Illustration-led movement, character animation and visual storytelling with a hand-crafted feel.",
-    image:
-      "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?auto=format&fit=crop&w=1400&q=85",
+      "Frame-by-frame character performance, graphic sequences, illustrative title openings, and expressive mixed-media films.",
+    deliverables: ["Frame-by-frame", "Character design", "Art direction", "Title sequence design"],
+    image: "/images/services/2d-animation.jpg",
   },
   {
     id: "3d-motion",
-    name: "3D Animation & Motion Design",
+    name: "3D Motion Design",
+    tagline: "Dimensional kinetic energy engineered for luxury brands and title craft.",
     description:
-      "3D movement, product visuals, titles and graphic motion — dimensional craft for screens of every size.",
-    image:
-      "https://images.unsplash.com/photo-1633101586622-7f4c6b9b1a15?auto=format&fit=crop&w=1400&q=85",
+      "High-end product reveals, dynamic kinetic typography, surreal brand worlds, and broadcast identity packages.",
+    deliverables: ["Product visuals", "Kinetic type", "Broadcast IDs", "Procedural animation"],
+    image: "/images/services/3d-motion.jpg",
   },
   {
     id: "screen-production",
     name: "Screen Production",
+    tagline: "From script breakdown and camera setups to theatrical master finish.",
     description:
-      "Films, web series and OTT-focused production — stories carried from concept to screen.",
-    image:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1400&q=85",
+      "On-set technical VFX supervision, live-action commercial direction, episodic content post-production, and final master grading.",
+    deliverables: ["VFX supervision", "Live-action direction", "Color grading (ACES)", "Master finishing"],
+    image: "/images/services/screen-production.jpg",
   },
 ];
+
 

@@ -479,6 +479,278 @@ body {
   transform: translateY(100%);
 }
 
+/* --------------------------------------------------------------------------
+   NOT FOUND — the 404 stage (components/NotFound/NotFoundStage.tsx, rendered
+   by app/not-found.tsx).
+
+   One idea: a film leader dial counting 3 · 2 · 1 down to the code, sitting in
+   a dark room with the projector's halo, strip perforations and one travelling
+   scan line. Nothing here moves: GSAP owns every transform and opacity in the
+   component, exactly as it does for the hero and the footer, so this block is
+   appearance and layout only. Every colour resolves to a token above.
+   -------------------------------------------------------------------------- */
+
+/* The stage. `isolation` keeps the ambient layers' stacking inside the section
+   and `overflow: hidden` clips the perforation bands to its own edges. */
+.error-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--filmarc-void);
+}
+
+/* The projector halo: electric blue bleeding down from above the fold, plus a
+   vignette that weights the four edges back to the void. Two gradients, one
+   element, so the stage never needs a wrapper. */
+.error-page__ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      58% 52% at 50% 0%,
+      color-mix(in srgb, var(--filmarc-electric) 13%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      120% 100% at 50% 50%,
+      transparent 52%,
+      var(--filmarc-overlay-strong) 100%
+    );
+}
+
+/* Interlaced scan lines: one pixel of void every three, fading out down the
+   stage so the display type is never fighting texture. */
+.error-page__scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--filmarc-void) 45%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+  mask-image: linear-gradient(to bottom, black 0%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 88%);
+}
+
+/* The film strip's edge: a hairline rule with a row of perforations punched
+   along it, top and bottom. One class for both bands — the modifier only flips
+   which side the rule sits on. */
+.error-page__perfs {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  height: 14px;
+  pointer-events: none;
+  border-bottom: 1px solid var(--filmarc-hairline);
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--filmarc-hairline) 0 16px,
+    transparent 16px 34px
+  );
+  background-size: 34px 8px;
+  background-position: 3px center;
+  background-repeat: repeat-x;
+}
+
+.error-page__perfs--bottom {
+  top: auto;
+  bottom: 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--filmarc-hairline);
+}
+
+/* The scan line GSAP carries down the stage — the only bright moving element
+   on the page, and the reason it reads as a live screen rather than a poster. */
+.error-page__sweep {
+  position: absolute;
+  top: 4%;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 1px;
+  pointer-events: none;
+  opacity: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--filmarc-cta) 45%, transparent),
+    transparent
+  );
+  box-shadow: 0 0 24px color-mix(in srgb, var(--filmarc-cta) 20%, transparent);
+}
+
+/* The leader dial: a hairline circle, a rotating wedge of electric blue like a
+   projector's shutter, and the countdown stacked on its axis. */
+.error-page__leader {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(13rem, 44vw, 21rem);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--filmarc-hairline);
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--filmarc-ink) 55%, transparent);
+}
+
+.error-page__leader-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--filmarc-electric) 22%, transparent) 0deg,
+    transparent 74deg
+  );
+}
+
+.error-page__leader-axis {
+  position: absolute;
+  pointer-events: none;
+  background-color: var(--filmarc-hairline);
+}
+
+.error-page__leader-axis--h {
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+}
+
+.error-page__leader-axis--v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+
+/* One numeral per frame. Only the code is visible without JavaScript: the
+   countdown's own frames are parked out of sight in CSS and brought in one at a
+   time by the timeline, so the dial can never show two numbers at once — and a
+   reduced-motion visitor lands straight on 404. */
+.error-page__step {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 13vw, 7rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--filmarc-bright);
+}
+
+.error-page__step--final {
+  opacity: 1;
+  color: var(--filmarc-cta);
+}
+
+/* The slate: the strip under the copy that names what was asked for and what
+   the archive holds. */
+.error-page__slate {
+  border: 1px solid var(--filmarc-hairline);
+  background-color: color-mix(in srgb, var(--filmarc-ink) 50%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   CONTACT — the brief's form (components/Contact/ContactEnquiry.tsx).
+
+   One class carries every control in the form — the text inputs, the two selects
+   and the textarea — so the six fields cannot drift apart, and the studio's dark
+   surfaces survive the browser's own furniture. Appearance and layout only: every
+   colour resolves to a token above.
+
+   THE INVALID STATE IS NOT A CLASS
+   --------------------------------
+   The component sets `aria-invalid` on a field it knows is wrong and the
+   stylesheet reads that attribute, so paint cannot disagree with what an
+   assistive technology is being told — there is no second flag to fall out of
+   step with the first.
+   -------------------------------------------------------------------------- */
+
+.contact-field {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--filmarc-chalk) 32%, transparent);
+  border-radius: 0.75rem;
+  background-color: var(--filmarc-ink);
+  color: var(--filmarc-chalk);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  transition:
+    border-color 240ms ease,
+    background-color 240ms ease;
+}
+
+.contact-field::placeholder {
+  color: var(--filmarc-smoke);
+}
+
+.contact-field:hover {
+  border-color: color-mix(in srgb, var(--filmarc-chalk) 55%, transparent);
+}
+
+/* Focus is the same ring the site's buttons wear — an outline, offset, in the
+   CTA's yellow — so a form field and a button answer the keyboard identically.
+   It is deliberately *only* an outline: autofill below repaints the field with an
+   inset shadow, and a focus ring expressed as a shadow would be the one thing
+   Chrome could swallow. */
+.contact-field:focus-visible {
+  outline: 2px solid var(--filmarc-cta);
+  outline-offset: 2px;
+  border-color: var(--filmarc-cta);
+  background-color: color-mix(in srgb, var(--filmarc-ink) 82%, transparent);
+}
+
+.contact-field[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--filmarc-ember) 65%, transparent);
+}
+
+/* The native select on a dark surface. Its own arrow is a dark glyph that
+   disappears into the field, so the control is un-dressed and the arrow re-drawn
+   as an inline SVG — chalk ink, which is the same colour the row would have had. */
+.contact-field--select {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23b2b0aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px 8px;
+}
+
+.contact-field option {
+  background-color: var(--filmarc-ink);
+  color: var(--filmarc-chalk);
+}
+
+.contact-field--area {
+  min-height: 11rem;
+  resize: vertical;
+}
+
+/* Chrome fills an autofilled field with its own pale yellow — which would be the
+   only light surface on the site, and one the studio's chalk copy would then be
+   illegible on. An inset shadow this wide repaints the field in ink without
+   touching the layout, and `color-scheme: dark` above keeps the caret and the
+   selection readable. */
+.contact-field:-webkit-autofill,
+.contact-field:-webkit-autofill:hover,
+.contact-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--filmarc-chalk);
+  box-shadow: inset 0 0 0 1000px var(--filmarc-ink);
+  caret-color: var(--filmarc-chalk);
+}
+
 /* Respect the OS "reduce motion" setting.
    The hero's entrance timeline (GSAP timelines inside `gsap.matchMedia()`) is
    switched off in JavaScript — see components/Home/HeroSection.tsx — and the

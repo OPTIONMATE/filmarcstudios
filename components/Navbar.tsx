@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import CubeText from "@/components/CubeText";
@@ -39,20 +40,21 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  *
  * LINKS
  * -----
- * In-page anchors. Lenis (`anchors: true`, components/SmoothScroll.tsx) scrolls
- * them with the page's own easing, and logs "Target not found" for any target
- * that does not exist yet — the sections after the hero are still to be built,
- * so those five links are structural placeholders, not broken navigation.
+ * Three of the five are routes: /services, /about and /contact each render a
+ * page. The other two are in-page anchors for sections that are still to be
+ * built — Lenis (`anchors: true`, components/SmoothScroll.tsx) scrolls them with
+ * the page's own easing and logs "Target not found" until those sections exist,
+ * so they are structural placeholders rather than broken navigation.
  *
  * This is the only client component on the page: open/close is its only state.
  */
 
 const NAV_LINKS = [
-  { href: "#work", label: "Work" },
-  { href: "#services", label: "Services" },
-  { href: "#about", label: "About" },
-  { href: "#insights", label: "Insights" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#work", label: "Work" },
+  { href: "/services", label: "Services" },
+  { href: "/about", label: "About" },
+  { href: "/#insights", label: "Insights" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 /** The studio's real contact route today; the hero's CTA uses it as well. */
@@ -300,8 +302,8 @@ export default function Navbar() {
       >
         {/* Left — the wordmark. The arc is the brand mark: one stroke in the CTA
             yellow, drawn inline so no logo asset is required. */}
-        <a
-          href="#showreel"
+        <Link
+          href="/"
           className="flex shrink-0 items-center gap-2 text-bright focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
         >
           <svg
@@ -320,19 +322,19 @@ export default function Navbar() {
           <span className="font-display text-[1.3rem] uppercase leading-none tracking-[0.13em] sm:text-[1.45rem]">
             FilmArc Studios
           </span>
-        </a>
+        </Link>
 
         {/* Centre — the one tinted group: a single compact pill with the links
             flush inside it. No per-link backgrounds, no full-width panel. */}
         <ul className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center rounded-full bg-overlay-soft p-1.5 backdrop-blur-md xl:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
-              <a
+              <Link
                 href={link.href}
                 className="inline-flex items-center rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
               >
                 <CubeText label={link.label} />
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -385,13 +387,13 @@ export default function Navbar() {
           <ul className="flex flex-col items-center text-center">
             {NAV_LINKS.map((link) => (
               <li key={link.href} data-menu-item className="flex w-full justify-center">
-                <a
+                <Link
                   href={link.href}
                   onClick={closeMenu}
                   className="flex w-full items-center justify-center border-b border-hairline py-4 text-center font-display text-[2rem] uppercase tracking-[0.06em] text-bright"
                 >
                   <CubeText label={link.label} />
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
