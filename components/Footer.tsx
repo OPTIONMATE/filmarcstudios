@@ -306,7 +306,7 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="footer-sigil-scope relative overflow-x-clip border-t border-hairline bg-void"
+      className="footer-sigil-scope relative overflow-x-clip border-t border-hairline bg-ink"
     >
       <div className="relative z-10 mx-auto w-full max-w-[112rem] px-6 pt-16 sm:px-10 sm:pt-20">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-16">

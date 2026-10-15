@@ -54,7 +54,7 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  *      body - before the first paint - and writes that switch for *this*
  *      document: always "play", so the first paint is the sequence's own
  *      opening frame;
- *   3. the overlay's animated elements - wordmark, skip button, trail, star -
+ *   3. the overlay's animated elements - wordmark, trail, star -
  *      carry `data-hero-enter`, the same marker the hero's copy carries: the
  *      stylesheet holds them at opacity 0, so the very first frame of the
  *      sequence is "black screen, nothing on it", and this effect asserts the
@@ -74,18 +74,16 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  * reveal instead of having played behind it. One introduction, not two.
  *
  * THE WAYS OUT. The sequence ends by removing itself from the document
- * (`return null`), and every path leads there: it completes, the visitor presses
- * "Skip intro" (a discreet, keyboard-reachable option) or Escape ends it early,
- * a reduced-motion visitor skips it before it starts. Underneath all of them
- * sits the bootstrap script's safety net: if the app never claims this overlay,
+ * (`return null`), and every path leads there: it completes, or a
+ * reduced-motion visitor skips it before it starts. Underneath both sits the bootstrap script's safety net: if the app never claims this overlay,
  * the script gives up on it, takes the overlay out and releases the page's own
  * pre-state, so a bundle that never arrives cannot leave anyone staring at a
  * black screen.
  *
- * PERFORMANCE AND A11Y. Two panels, one line, one star: four animated elements,
- * no particles, no gradients, no filters. The panels and the seam are
- * `aria-hidden`; the only thing a visitor can reach inside the overlay is the
- * skip button, and the page behind it stays in the accessibility tree.
+ * PERFORMANCE AND A11Y. Two panels, one line, one star: three animated
+ * elements, no particles, no gradients, no filters. The panels and the seam
+ * are `aria-hidden`; the overlay holds no focusable elements, and the page
+ * behind it stays in the accessibility tree.
  */
 
 /* --------------------------------------------------------------------------
@@ -164,9 +162,6 @@ const PANEL_OPEN = 1.05;
 const REVEAL_AT = PANELS_AT + 0.1;
 const SEAM_OUT = 0.5;
 
-/** The skip button's exit: the same two panels opening, without the wait. */
-const PANEL_EXIT = 0.45;
-
 /* --------------------------------------------------------------------------
    THE BOOTSTRAP SCRIPT
    -------------------------------------------------------------------------- */
@@ -196,19 +191,19 @@ const PANEL_EXIT = 0.45;
  */
 const BOOTSTRAP = `(function(){var d=document.documentElement;d.setAttribute("${INTRO_ATTRIBUTE}","${INTRO_PLAYING}");setTimeout(function(){var el=document.getElementById("${INTRO_ID}");if(!el||el.hasAttribute("${INTRO_CLAIMED}"))return;d.setAttribute("${INTRO_ATTRIBUTE}","${INTRO_STALLED}");var m=document.querySelectorAll("[${ENTRANCE_MARKER}]");for(var i=0;i<m.length;i++)m[i].removeAttribute("${ENTRANCE_MARKER}")},${STALL_MS})})()`;
 
-/* --------------------------------------------------------------------------
-   THE DECISION, ON THE CLIENT — always "play" (the intro runs on every load)
-   -------------------------------------------------------------------------- */
-
-/** Whether the sequence should run *here*, now. Reduced motion and the
- * bootstrap's own "stalled" verdict can still take the overlay out; nothing
- * else does. The intro plays on every full page load, by request. */
+/** Whether the sequence should run *here*, now. It runs only on a full
+ *  document load of "/" — the inline bootstrap below writes "play" while the
+ *  parser is still reading the body, before the first paint. On client-side
+ *  navigation back to "/" that script never runs (a script element inserted
+ *  by React does not execute), so the attribute is still "off" from the
+ *  previous visit — or absent entirely — and the intro stays finished. No
+ *  memory is kept anywhere: every full reload replays, every navigation
+ *  skips. Reduced motion and the bootstrap's own "stalled" verdict can still
+ *  take the overlay out; nothing else does. */
 function canPlayIntro(): boolean {
-  /* "Stalled" means the app arrived after the page had already been handed back:
-     the intro must not then play over a page the visitor is already using. */
-  if (
-    document.documentElement.getAttribute(INTRO_ATTRIBUTE) === INTRO_STALLED
-  ) {
+  /* No "play" switch means this mount is a client-side navigation, not a full
+     document load: never play over a page the visitor is already using. */
+  if (document.documentElement.getAttribute(INTRO_ATTRIBUTE) !== INTRO_PLAYING) {
     return false;
   }
 
@@ -216,8 +211,7 @@ function canPlayIntro(): boolean {
      for these visitors, and this is the same query it used. */
   if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return false;
 
-  /* Reduced-motion and "stalled" stay out; otherwise the intro plays on every
-     full page load, by request. */
+  /* Reduced-motion stays out; otherwise this full document load plays. */
   return true;
 }
 
@@ -232,29 +226,20 @@ export default function FilmArcIntro() {
   const trailRef = useRef<HTMLDivElement | null>(null);
   const starRef = useRef<HTMLDivElement | null>(null);
   const wordmarkRef = useRef<HTMLDivElement | null>(null);
-  const skipButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  /** The running sequence, so the skip button can end it early. */
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
-
-  /** One way out. Whichever path arrives first - the timeline's own end,
-   *  the skip button, Escape, a reduced-motion visitor, or a stalled bootstrap -
-   *  every later one is a no-op. */
+  /** One way out. Whichever path arrives first - the timeline's own end, a
+   *  reduced-motion visitor, or a stalled bootstrap - every later one is a
+   *  no-op. */
   const overRef = useRef(false);
 
   /**
    * Ends the intro: the document switch, the page's entrance, and then the
-   * overlay itself, so no paint can ever show a stopped sequence.
-   *
-   * `remember` is kept so every caller reads the same way; the intro replays
-   * on every full page load, so it records nothing.
+   * overlay itself, so no paint can ever show a stopped sequence. Nothing is
+   * recorded anywhere: every full reload replays.
    */
-  const endIntro = useCallback((remember: boolean) => {
+  const endIntro = useCallback(() => {
     if (overRef.current) return;
     overRef.current = true;
-
-    /* The intro replays on every full page load, so nothing is recorded. */
-    void remember;
 
     /* The stylesheet's switch first, then the gate: with the overlay already out
        of the box, the homepage's entrance is free to start in this same frame. */
@@ -263,61 +248,13 @@ export default function FilmArcIntro() {
     setFinished(true);
   }, []);
 
-  /**
-   * The skip button, and Escape with it. Not a cut: the two panels still part
-   * and the homepage's entrance still rides with them, but in 0.45s rather than
-   * 1.05s, and without the phases the visitor has not reached yet.
-   */
-  const skip = useCallback(() => {
-    if (overRef.current) return;
-
-    const wordmark = wordmarkRef.current;
-    const star = starRef.current;
-    const trail = trailRef.current;
-    const skipButton = skipButtonRef.current;
-    const leftPanel = leftPanelRef.current;
-    const rightPanel = rightPanelRef.current;
-
-    /* Nothing to hand over: end it outright rather than leave the page behind a
-       curtain. */
-    if (
-      !wordmark ||
-      !star ||
-      !trail ||
-      !skipButton ||
-      !leftPanel ||
-      !rightPanel
-    ) {
-      endIntro(true);
-      return;
-    }
-
-    timelineRef.current?.kill();
-    openEntranceGate();
-
-    gsap
-      .timeline({ onComplete: () => endIntro(true) })
-      .set([wordmark, star, trail, skipButton], { opacity: 0 }, 0)
-      .to(
-        leftPanel,
-        { xPercent: -100, duration: PANEL_EXIT, ease: "power2.inOut" },
-        0,
-      )
-      .to(
-        rightPanel,
-        { xPercent: 100, duration: PANEL_EXIT, ease: "power2.inOut" },
-        0,
-      );
-  }, [endIntro]);
-
   /* WHILE THE OVERLAY IS UP, the page behind it does not move.
      A wheel, a drag or a page-down would otherwise scroll the document under the
      panels, and the reveal would open on the middle of the hero with its reel
      paused off-screen. Both listeners are on the capture phase, so a gesture is
      stopped before the browser's own scrolling *or* Lenis's wheel handler
-     (components/SmoothScroll.tsx) can act on it; anything aimed at the skip
-     button is left alone, and a two-finger touch is left alone so pinch-zoom
-     still works. Escape is the keyboard's skip. */
+     (components/SmoothScroll.tsx) can act on it; a two-finger touch is left
+     alone so pinch-zoom still works. */
   useEffect(() => {
     /* Once the overlay is gone the page must scroll: these listeners exist
        only to hold the document still behind the closed panels. Note this
@@ -336,12 +273,6 @@ export default function FilmArcIntro() {
     ];
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        skip();
-        return;
-      }
-
-      if (event.target === skipButtonRef.current) return;
       if (!SCROLL_KEYS.includes(event.key)) return;
 
       event.preventDefault();
@@ -376,7 +307,7 @@ export default function FilmArcIntro() {
       window.removeEventListener("wheel", onWheel, { capture: true });
       window.removeEventListener("touchmove", onTouchMove, { capture: true });
     };
-  }, [skip, finished]);
+  }, [finished]);
 
   /* THE SEQUENCE. One timeline, built in a layout effect - before the browser
      paints the hydrated tree - and never started by a timer. */
@@ -388,7 +319,7 @@ export default function FilmArcIntro() {
        reduced-motion visitor (layer 1 at the top of this file). Nothing to
        run: hand the page over and leave. */
     if (!canPlayIntro()) {
-      endIntro(false);
+      endIntro();
       return;
     }
 
@@ -412,14 +343,12 @@ export default function FilmArcIntro() {
       const star = starRef.current;
       const trail = trailRef.current;
       const wordmark = wordmarkRef.current;
-      const skipButton = skipButtonRef.current;
       const leftPanel = leftPanelRef.current;
       const rightPanel = rightPanelRef.current;
       if (
         !star ||
         !trail ||
         !wordmark ||
-        !skipButton ||
         !leftPanel ||
         !rightPanel
       ) {
@@ -430,24 +359,24 @@ export default function FilmArcIntro() {
              the stylesheet was already holding (globals.css), plus the geometry
              it deliberately leaves to GSAP. None of it is visible while these
              values land, so none of it can be seen to move. */
-      gsap.set([wordmark, skipButton], { opacity: 0, y: 12 });
+      gsap.set(wordmark, { opacity: 0, y: 12 });
       gsap.set(trail, { opacity: 1, scaleY: 0 });
       gsap.set(star, { opacity: 1, y: -STAR_SIZE, scale: 1 });
 
-      /* 2 - and the stylesheet lets go of those same four elements, so from here
+      /* 2 - and the stylesheet lets go of those same three elements, so from here
              nothing in the cascade can fight the timeline for their opacity. */
-      releaseEntrance([wordmark, skipButton, trail, star]);
+      releaseEntrance([wordmark, trail, star]);
 
       const timeline = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
-        onComplete: () => endIntro(true),
+        onComplete: () => endIntro(),
       });
 
       /* PHASE 1 - the wordmark: up on black, held long enough to be read, and
          gone before the star reaches the middle of the frame. */
       timeline.to(
-        [wordmark, skipButton],
+        wordmark,
         { opacity: 1, y: 0, duration: WORDMARK_IN },
         0,
       );
@@ -505,13 +434,11 @@ export default function FilmArcIntro() {
         PANELS_AT,
       );
       timeline.to(
-        [trail, skipButton],
+        trail,
         { opacity: 0, duration: SEAM_OUT, ease: "power1.inOut" },
         PANELS_AT + 0.05,
       );
       timeline.call(openEntranceGate, undefined, REVEAL_AT);
-
-      timelineRef.current = timeline;
 
       /* 3 - play. On a screen that is already this sequence's first frame, wait
              for the display face rather than let a fallback font swap inside the
@@ -527,7 +454,6 @@ export default function FilmArcIntro() {
 
       return () => {
         timeline.kill();
-        timelineRef.current = null;
       };
     });
 
@@ -633,21 +559,6 @@ export default function FilmArcIntro() {
           sizes="(max-width: 640px) 224px, 288px"
           className="h-auto w-56 sm:w-96"
         />
-      </div>
-
-      {/* THE WAY OUT. Discreet, there from the first beat, and the first thing
-          Tab reaches, because it is the only focusable element inside the
-          overlay. Escape does the same job from anywhere (the effect above). */}
-      <div className="absolute inset-x-0 bottom-6 z-10 flex justify-center sm:bottom-8">
-        <button
-          ref={skipButtonRef}
-          type="button"
-          data-hero-enter
-          onClick={skip}
-          className="font-body text-[0.65rem] font-medium uppercase tracking-[0.22em] text-bright/45 transition-colors hover:text-bright focus-visible:text-bright focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
-        >
-          Skip intro
-        </button>
       </div>
     </div>
   );
