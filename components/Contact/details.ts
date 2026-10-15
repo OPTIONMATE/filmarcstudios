@@ -26,7 +26,7 @@
 import { services } from "@/components/Home/services";
 
 /** The studio's inbox. Published on the site already; the form defaults to it. */
-export const STUDIO_EMAIL = "hello@filmarc.studio";
+export const STUDIO_EMAIL = "info@filmarcstudios.com";
 
 /** The promise the page makes, in one sentence. Used in the rail and the steps. */
 export const RESPONSE_PROMISE = "We reply within one business day.";

@@ -115,7 +115,7 @@ function CompletedList() {
       <ul className="mt-6 grid grid-cols-1 gap-5">
         {COMPLETED.map((project, i) => (
           <li key={project.id}>
-            <article data-project-item className="group relative flex flex-col gap-3 overflow-hidden border border-hairline bg-void p-6 transition-colors duration-300 hover:border-cta/60 hover:bg-ink sm:flex-row sm:items-baseline sm:justify-between sm:gap-8 sm:p-7">
+            <article data-project-item className="group relative flex flex-col gap-3 overflow-hidden border bg-void p-6 transition-colors duration-300 hover:border-cta/60 border-cta hover:bg-ink sm:flex-row sm:items-baseline sm:justify-between sm:gap-8 sm:p-7">
               <div className="relative z-[1] flex items-baseline gap-4">
                 <span className="font-display text-[0.9rem] tracking-[0.1em] text-cta">
                   {String(i + 1).padStart(2, "0")}

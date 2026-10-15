@@ -7,7 +7,7 @@ import BubbleField from "@/components/Services/BubbleField";
 import { gsap } from "@/lib/gsap";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 
-const HERO_LINES = [["Our"], ["Services"]] as const;
+const HERO_LINES = [["Our", "Services"]] as const;
 const CTA_LINES = [["Have", "A"], ["Project", "Ahead?"]] as const;
 
 export default function ServicesContent() {
@@ -50,7 +50,7 @@ export default function ServicesContent() {
             label="Our Services"
             accentWords={["Services"]}
             charMarker="data-services-hero-char"
-            className="mt-6 text-center font-display text-[clamp(3.5rem,9vw,7.5rem)] uppercase leading-[0.85] tracking-[0.01em] text-bright"
+            className="mt-6 text-center font-display text-[clamp(2.75rem,8.5vw,7.5rem)] uppercase leading-[0.85] tracking-[0.01em] text-bright whitespace-nowrap"
           />
         </div>
         <div data-bubble-field className="mt-16 sm:mt-20">
@@ -72,7 +72,7 @@ export default function ServicesContent() {
               </p>
             </div>
             <a
-              href="mailto:hello@filmarc.studio"
+              href="mailto:info@filmarcstudios.com"
               className="inline-flex shrink-0 items-center justify-center rounded-full bg-cta px-8 py-4 font-body text-xs font-semibold uppercase tracking-[0.18em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta sm:px-10 sm:py-4.5"
             >
               <CubeText label="Start a project" />

@@ -86,7 +86,7 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  */
 const CTA = {
   label: "Know more",
-  href: "mailto:hello@filmarc.studio",
+  href: "mailto:info@filmarcstudios.com",
 } as const;
 
 /**

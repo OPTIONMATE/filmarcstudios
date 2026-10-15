@@ -137,7 +137,7 @@ export default function BubbleField() {
               data-bubble
               aria-label={bubble.name}
               className="bubble"
-              style={{ left: `${bubble.pos.x}%`, top: `${bubble.pos.y}%`, width: bubble.size, height: bubble.size }}
+              style={{ left: `${bubble.pos.x}%`, top: `${bubble.pos.y}%`, width: bubble.size, height: bubble.size, userSelect: "none" }}
             >
               <div data-bubble-float data-amp={bubble.floatAmp} data-dur={bubble.floatDur} className="bubble__float">
                 <div

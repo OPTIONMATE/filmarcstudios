@@ -50,7 +50,7 @@ import { services } from "@/components/Home/services";
 
 const CTA = {
   label: "Pitch your story",
-  href: "mailto:hello@filmarc.studio",
+  href: "mailto:info@filmarcstudios.com",
 } as const;
 
 /**

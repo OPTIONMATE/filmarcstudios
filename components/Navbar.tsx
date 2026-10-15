@@ -60,7 +60,7 @@ const NAV_LINKS = [
 ] as const;
 
 /** The studio's real contact route today; the hero's CTA uses it as well. */
-const START_HREF = "mailto:hello@filmarc.studio";
+const START_HREF = "mailto:info@filmarcstudios.com";
 
 /** Tailwind's `xl` breakpoint, as a media query. */
 const DESKTOP_QUERY = "(min-width: 80rem)";

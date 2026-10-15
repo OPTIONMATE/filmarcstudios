@@ -382,73 +382,145 @@
 
 
 /* --------------------------------------------------------------------------
-   FOOTER (components/Footer.tsx) — the giant FILMARC and its band.
-   One word, one layer, one smooth arrival.
-
-   The band owns the type, the tracking and the size. The fit pass in the
-   component writes `--footer-wordmark-size` (in px) from the width the band
-   actually has, so on every screen — phone to ultrawide — the word is set to
-   exactly that width; every metric below is expressed in that one size, so no
-   layer can ever disagree with another about how big the wordmark is. The
-   fallback value does the same sum in CSS for a visitor without JavaScript.
+   FOOTER (components/Footer.tsx) — the closing sequence: the mark, the line,
+   the coordinates, and the signature.
    -------------------------------------------------------------------------- */
 
-.site-footer {
-  /* One gutter for the whole footer — the wordmark band, the social bar and the
-     legal row all start and end on the same line. It lives here rather than in
-     three sets of padding utilities because the wordmark's fallback size below
-     is derived from it. Same rhythm as the page's own sections (`px-6` /
-     `sm:px-10`, i.e. Tailwind's 40rem). */
-  --footer-gutter: 1.5rem;
+/* The scope owns the spotlight's three live values. The component writes them
+   on the sigil's own box; declaring the defaults here keeps the no-JavaScript
+   paint identical to the parked state — light off, cursor centred. */
+.footer-sigil-scope {
+  --sigil-x: 0.5;
+  --sigil-y: 0.35;
+  --sigil-glow: 0;
 }
 
-@media (min-width: 40rem) {
-  .site-footer {
-    --footer-gutter: 2.5rem;
+/* --------------------------------------------------------------------------
+   ZONE C — THE SIGNATURE. One word, FILMARC, edge to edge, cropped at the
+   footer's own bottom edge. At rest the word is an outline only — no fill —
+   so it reads as an etched architectural signature. The lit twin is the same
+   word filled, masked to the cursor's broad radial window.
+   -------------------------------------------------------------------------- */
+
+.footer-sigil {
+  /* How broad the light is, in fractions of the sigil's own width: 0.30 keeps
+     the window across several neighbouring characters on every screen — the
+     single value that decides "a region, not a letter". */
+  --sigil-glow-size: 0.3;
+  position: relative;
+  /* Pulled upward so the top content may sit over the word's crown — overlap
+     is the composition, not a collision. The content wrapper carries `z-10`
+     so it always paints above. Bottom padding keeps the crop breathing room
+     inside the footer rather than against the viewport edge. */
+  margin-top: clamp(-6rem, -8vw, -2.5rem);
+  padding-bottom: clamp(0.5rem, 2vw, 1.5rem);
+  /* The crop: the box keeps the word's crown and shoulders and lets the footer
+     swallow the descender-depth below, for the monumental edge-to-edge read. */
+  height: 0.78em;
+  overflow: hidden;
+  font-family: var(--font-hero-display);
+  font-size: clamp(4rem, 21vw, 26rem);
+  line-height: 0.95;
+  /* Tight tracking stretches the seven glyphs wall to wall — no empty gutters
+     left or right. Bowlby One SC runs wide by design, so only a hair of
+     negative tracking is needed to close the sides. */
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  user-select: none;
+  cursor: default;
+  /* Full-bleed: the text box spans the viewport width, ignoring the content
+     gutters above. Centred text plus the footer's `overflow-x-clip` keeps wide
+     screens from ever growing a scrollbar. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  /* Outline only at rest — transparent fill, a hairline chalk stroke. */
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--filmarc-chalk) 22%, transparent);
+  /* Non-WebKit engines without `text-stroke`: fall back to the faintest chalk
+     fill so the signature never vanishes entirely. */
+  paint-order: stroke fill;
+}
+
+@supports not (-webkit-text-stroke: 1px black) {
+  .footer-sigil {
+    color: color-mix(in srgb, var(--filmarc-chalk) 10%, transparent);
   }
 }
 
-.footer-gutter {
-  padding-inline: var(--footer-gutter);
-}
-
-.footer-wordmark {
-  /* `FILMARC` in Honk at these settings is this many em wide — measured in a
-     browser, then recorded, which is what lets the no-JavaScript fallback land
-     on the same width the fit pass computes. */
-  --footer-wordmark-ratio: 3.262;
-  /* `100vw` includes any scrollbar, so this fallback can only ever come out a
-     hair too large — never too small; the footer clips its own horizontal
-     overflow, so "too large" cannot become a scrollbar. */
-  --footer-wordmark-size: calc(
-    (100vw - 2 * var(--footer-gutter)) / var(--footer-wordmark-ratio)
-  );
-  /* A little air above and below the word, scaled to its own size so the band
-     holds the same proportion on a phone and on an ultrawide. */
-  padding-block: calc(var(--footer-wordmark-size) * 0.06);
-}
-
-/* The word itself. `max-content` is what makes the width measurable: it keeps
-   the box on the word's own advance instead of on the band's. */
-.footer-wordmark__text {
+/* Both layers are the same word in the same box: identical metrics, always.
+   The base is the layout's own size; the lit twin is pinned over it exactly. */
+.footer-sigil__base,
+.footer-sigil__lit {
   display: block;
-  width: max-content;
-  font-family: var(--font-wordmark);
-  font-size: var(--footer-wordmark-size);
-  /* Honk is a one-weight face: asking for 800 would make the browser fake-bold
-     it and smear the counters, so the wordmark takes the real 400 and all of
-     its presence comes from its size. */
-  font-weight: 400;
-  /* Both of Honk's axes, pinned rather than left to the face's defaults: MORF
-     0 is its cleanest, least wobbly cut and SHLN 0 stands it upright, so the
-     word reads as one straight monumental word rather than a leaning one. The
-     fit pass below measures exactly these metrics. */
-  font-variation-settings: "MORF" 0, "SHLN" 0;
-  line-height: 0.84;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  width: 100%;
+  text-align: center;
   white-space: nowrap;
-  color: var(--filmarc-wordmark-blue);
+  /* Inherit the outline treatment so both layers share one skeleton. */
+  color: inherit;
+  -webkit-text-stroke: inherit;
+}
+
+.footer-sigil__lit {
+  position: absolute;
+  inset: 0;
+  /* The reveal fills the etched outline: chalk warmed a breath toward the
+     CTA's gold, bright enough to read as illumination, dim enough to stay
+     moonlit rather than neon. Fill replaces the transparent ink; the stroke
+     stays so edges keep their etched crispness under the light. */
+  color: color-mix(in srgb, var(--filmarc-chalk) 62%, var(--filmarc-cta));
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--filmarc-chalk) 30%, transparent);
+  /* The regional reveal. The mask is an elliptical window centred on the live
+     cursor (`--sigil-x` / `--sigil-y`, box fractions written by the
+     component's rAF loop): fully open at the centre, feathered to nothing at
+     its edge, and scaled by `--sigil-glow`, which the component eases toward 1
+     on entry and back to 0 on leave. The horizontal radius is a fraction of the
+     sigil's own width (`--sigil-glow-size`) — an `ellipse`, because a `circle`
+     cannot take a percentage radius and a fixed length could never stay broad
+     from phone to ultrawide; the vertical radius overreaches the cropped box
+     deliberately, so the feather reads as a soft top-to-bottom falloff rather
+     than a band. At rest the window is shut — the twin is painted but entirely
+     masked away, so the wordmark is purely its base whisper. */
+  -webkit-mask-image: radial-gradient(
+    ellipse calc(var(--sigil-glow-size) * 100%) 150% at calc(var(--sigil-x) * 100%)
+      calc(var(--sigil-y) * 100%),
+    rgb(0 0 0 / calc(var(--sigil-glow) * 0.96)) 0%,
+    rgb(0 0 0 / calc(var(--sigil-glow) * 0.55)) 42%,
+    transparent 68%
+  );
+  mask-image: radial-gradient(
+    ellipse calc(var(--sigil-glow-size) * 100%) 150% at calc(var(--sigil-x) * 100%)
+      calc(var(--sigil-y) * 100%),
+    rgb(0 0 0 / calc(var(--sigil-glow) * 0.96)) 0%,
+    rgb(0 0 0 / calc(var(--sigil-glow) * 0.55)) 42%,
+    transparent 68%
+  );
+}
+
+/* A whisper of film grain over the signature — one tiled 96px SVG turbulence
+   field at 5% opacity, `overlay` blend, pointer-transparent so the spotlight's
+   own listeners never feel it. Static, barely there: the grain of the print,
+   not an effect. Kept off the lit twin so the light itself stays clean. */
+.footer-sigil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='96' height='96' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+
+/* Coarse pointers and reduced motion share one treatment: no mask window, no
+   chase — the signature rests as its etched outline, a tonal presence only.
+   The component already skips its listeners and loop here; this is the belt
+   beside those braces, so a stylesheet-only render agrees. */
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .footer-sigil__lit {
+    -webkit-mask-image: none;
+    mask-image: none;
+    opacity: 0;
+  }
 }
 
 /* The hero entrance's opening frame — the half of the handoff that has to exist

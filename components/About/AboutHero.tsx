@@ -110,7 +110,7 @@ export default function AboutHero() {
         {/* CTA */}
         <a
           ref={ctaRef}
-          href="mailto:hello@filmarc.studio"
+          href="mailto:info@filmarcstudios.com"
           className="mt-10 inline-flex items-center justify-center rounded-full bg-cta px-8 py-4 font-body text-xs font-semibold uppercase tracking-[0.18em] text-cta-ink transition-[filter] duration-300 hover:brightness-[1.07] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta sm:mt-12 sm:px-10 sm:py-4.5"
         >
           <CubeText label="Initiate Project" />
