@@ -51,6 +51,7 @@ export function AiReelScene() {
             {AI_STAGES.map((stage, i) => (
               <div key={stage.index} className="ai-cell" data-ai-cell>
                 <FrameCard stageIndex={i} />
+                <span aria-hidden className="ai-cell__flash" data-ai-flash />
               </div>
             ))}
           </div>

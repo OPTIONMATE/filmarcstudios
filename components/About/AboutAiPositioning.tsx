@@ -28,11 +28,24 @@ export default function AboutAiPositioning() {
         const strip = section.querySelector("[data-ai-strip]");
         const scene = section.querySelector("[data-ai-scene]");
         const cells = gsap.utils.toArray<HTMLElement>("[data-ai-cell]", section);
+        const flashes = gsap.utils.toArray<HTMLElement>("[data-ai-flash]", section);
         const caption = section.querySelector("[data-ai-caption]");
         if (!reelSpin || !viewport || !strip || !scene || !caption) return;
 
+        /* Physical unwind: the band slides right → left out of the reel.
+           Parked with its RIGHT edge exactly at the viewport's left edge, so
+           zero pixels show initially — every frame travels out from inside
+           the reel. Each cell's gold flash fires at the scrub instant its
+           centre clears the reel edge, then hands off to the next. */
         const measure = () =>
           Math.max(0, (strip as HTMLElement).scrollWidth - (viewport as HTMLElement).clientWidth);
+        const parkedX = () => -(measure() + (viewport as HTMLElement).clientWidth);
+        const exitAt = (cell: HTMLElement) => {
+          const total = parkedX() === 0 ? 1 : -parkedX();
+          const edge = (viewport as HTMLElement).clientWidth * 0 + 40;
+          const pos = cell.offsetLeft + cell.offsetWidth * 0.5 + edge;
+          return Math.min(0.94, Math.max(0.04, 1 - pos / total));
+        };
 
         const tl = gsap.timeline({
           defaults: { ease: "none" },
@@ -47,10 +60,16 @@ export default function AboutAiPositioning() {
           },
         });
 
-        tl.fromTo(strip, { x: () => -measure() * 0.9 }, { x: 0, duration: 1 }, 0);
+        tl.fromTo(strip, { x: parkedX }, { x: 0, duration: 1 }, 0);
         tl.fromTo(reelSpin, { rotation: 0 }, { rotation: REEL_TURNS * 360, duration: 1 }, 0);
-        tl.fromTo(cells, { opacity: 0.25 }, { opacity: 1, duration: 0.2, stagger: 0.14 }, 0.05);
-        tl.fromTo(caption, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.08 }, 0.9);
+        cells.forEach((cell, i) => {
+          const flash = flashes[i];
+          if (!flash) return;
+          const at = exitAt(cell);
+          tl.fromTo(flash, { opacity: 0 }, { opacity: 1, duration: 0.025 }, at);
+          tl.to(flash, { opacity: 0, duration: 0.055 }, at + 0.025);
+        });
+        tl.fromTo(caption, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.08 }, 0.92);
       }, section);
 
       return () => ctx.revert();

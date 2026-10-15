@@ -6,7 +6,7 @@ import ServicesContent from "@/components/Services/ServicesContent";
 export const metadata: Metadata = {
   title: "Services — Filmarc Studios",
   description:
-    "Explore FilmArc Studios services: VFX, CGI, 2D Animation, 3D Motion Design, and Screen Production.",
+    "Explore Filmarc Studios services: VFX/CGI, AI-assisted VFX, AI filmmaking, on-set supervision, previsualization, rotoscopy and technical QC.",
 };
 
 export default function ServicesPage() {

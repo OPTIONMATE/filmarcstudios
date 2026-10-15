@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import CubeText from "@/components/CubeText";
@@ -65,6 +66,13 @@ const START_HREF = "mailto:hello@filmarc.studio";
 const DESKTOP_QUERY = "(min-width: 80rem)";
 
 export default function Navbar() {
+  /* Active route — the link matching the current page wears the gold
+     highlight (desktop pill + mobile panel). Anchor links (/#insights)
+     never match a route, so they never highlight. */
+  const pathname = usePathname();
+  const isActive = (href: string) =>
+    href.startsWith("/") && !href.includes("#") &&
+    (href === "/" ? pathname === "/" : pathname.startsWith(href));
   /* `menuOpen` is the intent (the button, Escape, breakpoint and links write
      here); `menuMounted` is the render gate (the timeline alone unmounts on
      reverse-complete). `menuClosing` is therefore derived: mounted but no
@@ -327,16 +335,22 @@ export default function Navbar() {
         {/* Centre — the one tinted group: a single compact pill with the links
             flush inside it. No per-link backgrounds, no full-width panel. */}
         <ul className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center rounded-full bg-[#000000] p-1.5 backdrop-blur-md xl:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="inline-flex items-center rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] text-bright/75 transition-colors hover:text-bright focus-visible:text-bright"
-              >
-                <CubeText label={link.label} />
-              </Link>
-            </li>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex items-center rounded-full px-4 py-2 font-body text-[0.7rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:text-bright ${
+                    active ? "text-cta hover:text-cta" : "text-bright/75 hover:text-bright"
+                  }`}
+                >
+                  <CubeText label={link.label} />
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         {/* Right — the action. There is deliberately no "sign in": the project
@@ -385,17 +399,23 @@ export default function Navbar() {
           className="fixed inset-0 overflow-y-auto overscroll-contain bg-void/95 px-6 pt-24 pb-12 backdrop-blur-xl xl:hidden"
         >
           <ul className="flex flex-col items-center text-center">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href} data-menu-item className="flex w-full justify-center">
-                <Link
-                  href={link.href}
-                  onClick={closeMenu}
-                  className="flex w-full items-center justify-center border-b border-hairline py-4 text-center font-display text-[2rem] uppercase tracking-[0.06em] text-bright"
-                >
-                  <CubeText label={link.label} />
-                </Link>
-              </li>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <li key={link.href} data-menu-item className="flex w-full justify-center">
+                  <Link
+                    href={link.href}
+                    onClick={closeMenu}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex w-full items-center justify-center border-b border-hairline py-4 text-center font-display text-[2rem] uppercase tracking-[0.06em] ${
+                      active ? "text-cta" : "text-bright"
+                    }`}
+                  >
+                    <CubeText label={link.label} />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           <div data-menu-item className="flex w-full justify-center">

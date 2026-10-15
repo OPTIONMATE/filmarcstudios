@@ -5,15 +5,16 @@ export const AI_POSITIONING_CSS = `
 .ai-reel__spin { width: 100%; height: 100%; will-change: transform; }
 .ai-reel__img { width: 100%; height: 100%; object-fit: contain; }
 .ai-reel__hub { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; transform: translate(-50%,-50%); border-radius: 9999px; background: var(--filmarc-cta); box-shadow: 0 0 0 6px var(--filmarc-void), 0 0 0 7px var(--filmarc-cta); }
-.ai-strip-viewport { position: relative; flex: 1 1 auto; min-width: 0; overflow: hidden; padding: 6px 0 6px 40px; -webkit-mask-image: linear-gradient(to right, transparent 0, black 34px); mask-image: linear-gradient(to right, transparent 0, black 34px); }
+.ai-strip-viewport { position: relative; flex: 1 1 auto; min-width: 0; overflow: hidden; padding: 6px 0 6px 40px; }
 .ai-film { width: max-content; background: #05060a; border-top: 1px solid color-mix(in srgb, var(--filmarc-cta) 55%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--filmarc-cta) 55%, transparent); will-change: transform; }
 .ai-film__rail { display: flex; gap: 14px; padding: 9px 18px; }
 .ai-film__rail--top { border-bottom: 1px solid color-mix(in srgb, var(--filmarc-cta) 22%, transparent); }
 .ai-film__rail--bottom { border-top: 1px solid color-mix(in srgb, var(--filmarc-cta) 22%, transparent); }
 .ai-film__hole { width: 12px; height: 9px; flex: none; border-radius: 2.5px; background: color-mix(in srgb, var(--filmarc-chalk) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--filmarc-cta) 28%, transparent); }
 .ai-cells { display: flex; gap: 0; padding: 18px; }
-.ai-cell { width: 160px; flex: none; padding: 0 10px; border-left: 1px solid color-mix(in srgb, var(--filmarc-cta) 28%, transparent); }
+.ai-cell { position: relative; width: 160px; flex: none; padding: 0 10px; border-left: 1px solid color-mix(in srgb, var(--filmarc-cta) 28%, transparent); }
 .ai-cell:first-child { border-left: none; }
+.ai-cell__flash { position: absolute; inset: 0; background: color-mix(in srgb, var(--filmarc-cta) 22%, transparent); opacity: 0; pointer-events: none; }
 .ai-frame { background: transparent; border: none; border-radius: 0; overflow: visible; }
 .ai-frame__body { display: flex; flex-direction: column; align-items: center; padding: 18px 12px 16px; text-align: center; }
 .ai-frame__index { font-size: 0.62rem; letter-spacing: 0.3em; text-indent: 0.3em; color: var(--filmarc-smoke); font-family: var(--font-body); }
