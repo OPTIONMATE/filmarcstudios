@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { gsap } from "@/lib/gsap";
@@ -19,8 +20,8 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  *
  * THE SEQUENCE (one timeline, ~3.6s)
  *
- *   0.00  PHASE 1  the wordmark: the studio's own lockup (the arc mark plus
- *                  "FilmArc Studios" in Bebas Neue, the same pair the navbar
+ *   0.00  PHASE 1  the wordmark: the studio's full lockup
+ *                  (public/images/Logo.png, the same image the navbar
  *                  carries) fades up on black, centred, and is given a beat to
  *                  be read before it clears the axis for the star.
  *   1.25  PHASE 2  the star: a small yellow sparkle enters the top of the frame
@@ -616,30 +617,22 @@ export default function FilmArcIntro() {
         </div>
       </div>
 
-      {/* THE WORDMARK - the studio's own lockup: the same arc mark in the same
-          yellow, above the same words in the same condensed face the navbar
-          carries, centred and larger because this is a title card and not a bar. */}
+      {/* THE WORDMARK - the studio's full lockup from public/images/Logo.png,
+          centred and large because this is a title card and not a bar. */}
       <div
         ref={wordmarkRef}
         data-hero-enter
-        className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-4"
+        className="absolute inset-0 flex items-center justify-center px-8"
       >
-        <svg
-          aria-hidden
-          viewBox="0 0 32 32"
-          fill="none"
-          className="h-9 w-9 text-cta sm:h-11 sm:w-11"
-        >
-          <path
-            d="M4 28A24 24 0 0 1 28 4"
-            stroke="currentColor"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-        </svg>
-        <span className="font-display text-[1.5rem] uppercase leading-none tracking-[0.13em] text-bright sm:text-[2rem]">
-          FilmArc Studios
-        </span>
+        <Image
+          src="/images/Logo.png"
+          alt="FilmArc Studios"
+          width={2170}
+          height={725}
+          preload
+          sizes="(max-width: 640px) 224px, 288px"
+          className="h-auto w-56 sm:w-96"
+        />
       </div>
 
       {/* THE WAY OUT. Discreet, there from the first beat, and the first thing

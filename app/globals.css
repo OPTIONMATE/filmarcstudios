@@ -29,31 +29,34 @@
   --filmarc-amber: #ffb347;
   --filmarc-cyan: #35d6f5;
   --filmarc-violet: #7a5cff;
-  /* Electric blue — the services cards' hover ink (the one place a service
-     name leaves white). Deep enough to read on the near-black backdrop. */
   --filmarc-electric: #00a3ff;
+  /* Project-card ambients (components/Home/ProjectsSection.tsx) — deep jewel
+     inks kept near-black so the corner glows stay dark and very subtle. */
+  --filmarc-crimson: #ff3b4e;
+  --filmarc-emerald: #10b981;
 
-  /* --- Footer wordmark (components/Footer.tsx) -------------------------- */
-  /* The giant FILMARC is the page's last scene. Its ink is deeper and cooler
-     than the UI accents above — which is why it is its own token rather than a
-     re-tint of --filmarc-cyan / --filmarc-violet / --filmarc-electric. Only the
-     footer wordmark's own rule consumes it (see the FOOTER block below). */
+
   --filmarc-wordmark-blue: #0878f9;
 
-  /* --- Hero + navigation ------------------------------------------------ */
-  /* The hero sits on moving footage, so its copy is pure white rather than the
-     site's warm chalk, and its one action carries the comp's vivid yellow. */
+ 
   --filmarc-bright: #ffffff; /* headline, wordmark, navigation links */
-  --filmarc-cta: #f5f500; /* the CTA fill — the only bright surface on screen */
+  --filmarc-cta: #D4AF37; /* the CTA fill — the only bright surface on screen */
   --filmarc-cta-ink: #111111; /* copy set on the CTA: never white on yellow */
   /* The opening sequence's star: the brand yellow above, plus this one warm
      white core. Those two colours are the whole sequence
      (components/Intro/FilmArcIntro.tsx). */
   --filmarc-star-core: #fff8e3;
 
+  /* --- Hero heading (components/Home/HeroSection.tsx) --------------------- */
+  /* The right-aligned headline's two inks. Both are tokens so the comp can be
+     retinted (a new grade, a campaign variant) without touching the
+     component. */
+  --filmarc-hero-heading: #d4af37; /* HYBRID / FILMMAKING, in Bowlby One SC */
+  --filmarc-hero-eyebrow: #f5f3ee; /* "the future of", in Manrope bold */
+
   /* --- Derived translucency (always mixed from the palette above) ------- */
   --filmarc-hairline: color-mix(in srgb, var(--filmarc-chalk) 15%, transparent);
-  --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 38%, transparent);
+  --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 10%, transparent);
   --filmarc-overlay-mid: color-mix(in srgb, var(--filmarc-void) 62%, transparent);
   --filmarc-overlay-strong: color-mix(in srgb, var(--filmarc-void) 90%, transparent);
   /* The heaviest tint the hero's scrim uses: 55% of the void colour, i.e. the
@@ -77,6 +80,8 @@
   --color-cyan: var(--filmarc-cyan);
   --color-violet: var(--filmarc-violet);
   --color-electric: var(--filmarc-electric);
+  --color-crimson: var(--filmarc-crimson);
+  --color-emerald: var(--filmarc-emerald);
   --color-hairline: var(--filmarc-hairline);
   --color-overlay-soft: var(--filmarc-overlay-soft);
   --color-overlay-mid: var(--filmarc-overlay-mid);
@@ -85,6 +90,8 @@
   --color-cta: var(--filmarc-cta);
   --color-cta-ink: var(--filmarc-cta-ink);
   --color-star-core: var(--filmarc-star-core);
+  --color-hero-heading: var(--filmarc-hero-heading);
+  --color-hero-eyebrow: var(--filmarc-hero-eyebrow);
 
   /* Semantic aliases */
   --color-background: var(--filmarc-void);
@@ -95,6 +102,11 @@
   --font-body: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bebas-neue), "Arial Narrow", ui-sans-serif, sans-serif;
   --font-wordmark: var(--font-honk), ui-sans-serif, system-ui, sans-serif;
+  /* Hero heading faces — Bowlby One SC + Manrope (both Google, OFL) */
+  --font-hero-display: var(--font-bowlby), ui-sans-serif, system-ui, sans-serif;
+  --font-hero-eyebrow: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Poster serif — Playfair Display for VFX Supervisor card titles */
+  --font-poster: var(--font-poster-serif), "Georgia", "Times New Roman", serif;
 }
 
 /* --------------------------------------------------------------------------
@@ -119,11 +131,13 @@
   );
 }
 
-/* The hero headline's two tiers. Every word keeps its first letter at the
-   headline's own size — the visual entry point — and drops the remaining
+/* The signature two-tier heading style. Every word keeps its first letter at
+   the heading's own size — the visual entry point — and drops the remaining
    letters to 75% of it, on the same baseline, so the word still reads as one
-   word. Neither tier changes the line box: `leading-[0.85]` on the h1 keeps
-   owning the line spacing. */
+   word. Neither tier changes the line box: the heading's own `leading-*` keeps
+   owning the line spacing. (The hero's headline no longer runs this ladder —
+   it is set in Bowlby One SC at one size — but the section headings below it
+   do.) */
 @utility heading-initial {
   font-size: 1em;
 }
@@ -258,6 +272,114 @@
   border: 1px solid var(--filmarc-hairline);
   background-color: var(--filmarc-ink);
 }
+/* --------------------------------------------------------------------------
+   FULL-FILM VFX PIPELINE (components/Home/PipelineSection.tsx).
+   Same dark theme as the rest of the page: void backdrop, hairline border,
+   chalk/ash copy, and the existing CTA accent for the arch + active node.
+   Colours live here — never in the component.
+   -------------------------------------------------------------------------- */
+
+.pipeline-section {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.pipeline-frame {
+  min-height: 100vh;
+  min-height: 100svh;
+  max-height: 100vh;
+  max-height: 100svh;
+}
+
+.pipeline-frame__border {
+  border-color: var(--filmarc-hairline);
+  background-color: transparent;
+}
+
+.pipeline-ink {
+  color: var(--filmarc-bright);
+}
+
+.pipeline-muted {
+  color: var(--filmarc-ash);
+}
+
+.pipeline-faint {
+  color: var(--filmarc-smoke);
+}
+
+.pipeline-eyebrow {
+  color: var(--filmarc-cta);
+}
+
+.pipeline-arch {
+  stroke: var(--filmarc-cta);
+  opacity: 0.85;
+}
+
+.pipeline-edge {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  background-color: var(--filmarc-ink);
+  border: 1px solid var(--filmarc-hairline);
+  color: var(--filmarc-chalk);
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+/* Inactive nodes stay restrained (ash icons on ink); the active node alone
+   wears the existing CTA accent. */
+.pipeline-node {
+  width: clamp(2.5rem, 7vh, 3.5rem);
+  height: clamp(2.5rem, 7vh, 3.5rem);
+  background-color: var(--filmarc-ink);
+  border: 2px solid var(--filmarc-hairline);
+  color: var(--filmarc-ash);
+  outline-color: var(--filmarc-cta);
+}
+
+.pipeline-node--active {
+  border-color: var(--filmarc-cta);
+  color: var(--filmarc-cta);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--filmarc-cta) 22%, transparent);
+}
+
+.pipeline-glyph {
+  width: 52%;
+  height: 52%;
+}
+
+.pipeline-node__label {
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  color: var(--filmarc-smoke);
+  transition: color 0.3s ease;
+}
+
+@media (min-width: 40rem) {
+  .pipeline-node__label {
+    font-size: 0.64rem;
+  }
+}
+
+.pipeline-node__label--active {
+  color: var(--filmarc-cta);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-node,
+  .pipeline-node__label,
+  .pipeline-caption {
+    transition: none;
+  }
+}
+
 
 /* --------------------------------------------------------------------------
    FOOTER (components/Footer.tsx) — the giant FILMARC and its band.
@@ -431,7 +553,7 @@ body {
 }
 
 ::selection {
-  background-color: var(--filmarc-cta);
+  background-color: #D4AF37;
   color: var(--filmarc-abyss);
 }
 
@@ -659,6 +781,209 @@ body {
 .error-page__slate {
   border: 1px solid var(--filmarc-hairline);
   background-color: color-mix(in srgb, var(--filmarc-ink) 50%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   PROJECT CARD AMBIENTS (components/Home/ProjectsSection.tsx).
+   Four visible-but-dark treatments — one jewel-tinted wash + corner glow plus
+   one small corner texture per card, cycling deterministically (ember → violet →
+   azure → emerald). Each texture lives only in a small feathered corner
+   patch (never the whole card); the wash is a dark gradient so copy contrast
+   never suffers. Colours resolve
+   to tokens above — never hardcoded in the component.
+   -------------------------------------------------------------------------- */
+
+.project-ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.project-ambient__wash,
+.project-ambient__glow,
+.project-ambient__pattern {
+  position: absolute;
+  pointer-events: none;
+}
+
+.project-ambient__wash {
+  inset: 0;
+}
+
+.project-ambient__glow {
+  width: 22rem;
+  height: 22rem;
+  border-radius: 9999px;
+  filter: blur(48px);
+  transition: opacity 500ms ease;
+}
+
+.project-ambient__pattern {
+  width: 13rem;
+  height: 10rem;
+  opacity: 0.28;
+  transition: opacity 500ms ease;
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    black 25%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(closest-side, black 25%, transparent 75%);
+}
+
+.group:hover .project-ambient__pattern {
+  opacity: 0.4;
+}
+
+/* 01 — ember red: gradient rising from the bottom (under the name) + fine
+   grid patch, bottom-right. */
+.project-ambient--ember .project-ambient__wash {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--filmarc-crimson) 30%, #0d101b) 0%,
+    #0d101b 55%,
+    #0d101b 100%
+  );
+}
+
+.project-ambient--ember .project-ambient__glow {
+  bottom: -8rem;
+  right: -7rem;
+  top: auto;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--filmarc-crimson) 65%, transparent) 0%,
+    transparent 72%
+  );
+}
+
+.project-ambient--ember .project-ambient__pattern {
+  bottom: 0;
+  right: 0;
+  top: auto;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--filmarc-crimson) 55%, var(--filmarc-chalk) 20%) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--filmarc-crimson) 55%, var(--filmarc-chalk) 20%) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: bottom right;
+}
+
+/* 02 — violet purple: gradient rising from the bottom (under the name) +
+   dot-circle patch, bottom-right. */
+.project-ambient--violet .project-ambient__wash {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--filmarc-violet) 30%, #0d101b) 0%,
+    #0d101b 55%,
+    #0d101b 100%
+  );
+}
+
+.project-ambient--violet .project-ambient__glow {
+  bottom: -8rem;
+  right: -7rem;
+  left: auto;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--filmarc-violet) 65%, transparent) 0%,
+    transparent 72%
+  );
+}
+
+.project-ambient--violet .project-ambient__pattern {
+  bottom: 0;
+  right: 0;
+  left: auto;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--filmarc-violet) 70%, var(--filmarc-chalk) 25%) 1.5px,
+    transparent 2px
+  );
+  background-size: 17px 17px;
+  background-position: bottom right;
+}
+
+/* 03 — azure blue: gradient rising from the bottom (under the name) +
+   fish-scale patch, bottom-right. */
+.project-ambient--azure .project-ambient__wash {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--filmarc-electric) 30%, #0d101b) 0%,
+    #0d101b 55%,
+    #0d101b 100%
+  );
+}
+
+.project-ambient--azure .project-ambient__glow {
+  bottom: -8rem;
+  right: -7rem;
+  top: auto;
+  left: auto;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--filmarc-electric) 65%, transparent) 0%,
+    transparent 72%
+  );
+}
+
+.project-ambient--azure .project-ambient__pattern {
+  bottom: 0;
+  right: 0;
+  top: auto;
+  left: auto;
+  background-image:
+    radial-gradient(
+      circle at 50% 100%,
+      transparent 8.5px,
+      color-mix(in srgb, var(--filmarc-electric) 65%, var(--filmarc-chalk) 20%) 9px,
+      color-mix(in srgb, var(--filmarc-electric) 65%, var(--filmarc-chalk) 20%) 9.8px,
+      transparent 10.4px
+    ),
+    radial-gradient(
+      circle at 50% 0%,
+      transparent 8.5px,
+      color-mix(in srgb, var(--filmarc-electric) 45%, var(--filmarc-chalk) 15%) 9px,
+      color-mix(in srgb, var(--filmarc-electric) 45%, var(--filmarc-chalk) 15%) 9.8px,
+      transparent 10.4px
+    );
+  background-size: 26px 16px;
+  background-position:
+    0 0,
+    13px 8px;
+}
+
+/* 04 — emerald: gradient rising from the bottom (under the name) +
+   diagonal hairline patch, bottom-right. */
+.project-ambient--emerald .project-ambient__wash {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--filmarc-emerald) 30%, #0d101b) 0%,
+    #0d101b 55%,
+    #0d101b 100%
+  );
+}
+
+.project-ambient--emerald .project-ambient__glow {
+  bottom: -8rem;
+  right: -7rem;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--filmarc-emerald) 65%, transparent) 0%,
+    transparent 72%
+  );
+}
+
+.project-ambient--emerald .project-ambient__pattern {
+  bottom: 0;
+  right: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--filmarc-emerald) 60%, var(--filmarc-chalk) 20%) 0,
+    color-mix(in srgb, var(--filmarc-emerald) 60%, var(--filmarc-chalk) 20%) 1px,
+    transparent 1px,
+    transparent 11px
+  );
 }
 
 /* --------------------------------------------------------------------------

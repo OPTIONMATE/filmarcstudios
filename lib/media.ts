@@ -29,7 +29,7 @@
  */
 
 /** The reel the hero plays. See the notes above before changing it. */
-const REEL_SRC = "/media/samplevideo.mp4";
+const REEL_SRC = "/videos/showreel.mp4";
 
 export const SHOWREEL = {
   video: {

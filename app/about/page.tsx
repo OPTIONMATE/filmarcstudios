@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import AboutHero from "@/components/About/AboutHero";
-import AboutManifesto from "@/components/About/AboutManifesto";
-import AboutDisciplines from "@/components/About/AboutDisciplines";
-import AboutProcess from "@/components/About/AboutProcess";
+import AboutApproach from "@/components/About/AboutApproach";
+import AboutAiPositioning from "@/components/About/AboutAiPositioning";
+
+import AboutLeadership from "@/components/About/AboutLeadership";
 
 export const metadata: Metadata = {
   title: "About Us — Filmarc Studios",
@@ -18,9 +19,9 @@ export default function AboutPage() {
       <Navbar />
       <main className="flex flex-1 flex-col">
         <AboutHero />
-        <AboutManifesto />
-        <AboutDisciplines />
-        <AboutProcess />
+        <AboutApproach />
+        <AboutAiPositioning />
+        <AboutLeadership />
       </main>
       <Footer />
     </>

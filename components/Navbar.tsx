@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -50,7 +51,7 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
  */
 
 const NAV_LINKS = [
-  { href: "/#work", label: "Work" },
+  { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
   { href: "/#insights", label: "Insights" },
@@ -300,33 +301,32 @@ export default function Navbar() {
            the close button stay above the open menu panel below them. */
         className="relative z-10 mx-auto flex h-16 w-full max-w-[112rem] items-center justify-between gap-4 px-4 sm:px-6 lg:h-[4.75rem] lg:px-10"
       >
-        {/* Left — the wordmark. The arc is the brand mark: one stroke in the CTA
-            yellow, drawn inline so no logo asset is required. */}
+        {/* Left — the logo: the full FILMARC STUDIOS mark from
+            public/images/Logo.png. Height-set (`h-9` / `sm:h-10`) so the
+            image's 2170:725 ratio owns the width; `preload` (Next 16's
+            replacement for the deprecated `priority`) fetches it while the
+            intro still covers the screen, and `sizes` keeps the picked srcset
+            candidate near the rendered width instead of a viewport-wide one.
+            The alt text is the link's accessible name — the job the old text
+            span did. */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-bright focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
+          className="flex shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cta"
         >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 32 32"
-            fill="none"
-            className="h-5 w-5 shrink-0 text-cta sm:h-6 sm:w-6"
-          >
-            <path
-              d="M4 28A24 24 0 0 1 28 4"
-              stroke="currentColor"
-              strokeWidth="5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="font-display text-[1.3rem] uppercase leading-none tracking-[0.13em] sm:text-[1.45rem]">
-            FilmArc Studios
-          </span>
+          <Image
+            src="/images/Logo.png"
+            alt="FilmArc Studios"
+            width={2170}
+            height={725}
+            preload
+            sizes="160px"
+            className="h-9 w-auto sm:h-14"
+          />
         </Link>
 
         {/* Centre — the one tinted group: a single compact pill with the links
             flush inside it. No per-link backgrounds, no full-width panel. */}
-        <ul className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center rounded-full bg-overlay-soft p-1.5 backdrop-blur-md xl:flex">
+        <ul className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center rounded-full bg-[#000000] p-1.5 backdrop-blur-md xl:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <Link
