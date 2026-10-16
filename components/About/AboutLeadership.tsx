@@ -179,19 +179,19 @@ export default function AboutLeadership() {
                   </span>
                 </div>
 
-                <h3 className="mt-2 font-display text-[1.375rem] uppercase leading-[0.95] tracking-[0.02em] text-bright">
+                <h3 className="mt-2 font-hero-eyebrow text-[1.375rem] uppercase leading-[0.95] tracking-normal text-bright">
                   {leader.name}
                 </h3>
                 <p className="mt-1.5 font-body text-[0.72rem] font-semibold uppercase leading-[1.6] tracking-[0.1em] text-cta">
                   {leader.role}
                 </p>
 
-                <p className="mt-2 font-body text-[0.85rem] leading-[1.6] text-ash">
+                <p className="mt-2 font-body text-[0.85rem] leading-[1.6] text-chalk">
                   {leader.expertise.join(" · ")}
                 </p>
 
                 {leader.credit ? (
-                  <p className="mt-1.5 font-body text-[0.78rem] leading-relaxed text-smoke">
+                  <p className="mt-1.5 font-body text-[0.78rem] leading-relaxed text-ash">
                     {leader.credit}
                   </p>
                 ) : null}

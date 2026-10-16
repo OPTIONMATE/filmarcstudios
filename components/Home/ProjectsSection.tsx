@@ -232,21 +232,7 @@ export default function ProjectsSection() {
               />
             ))}
           </div>
-        </div>
-
-        <div className="mt-14 sm:mt-20">
-          <div className="flex items-baseline justify-between gap-6 border-b border-hairline pb-4">
-            <h3 className="font-body text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-bright">
-              Ongoing Projects
-            </h3>
-            <span className="font-body text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-cta">
-              {String(ONGOING.length).padStart(2, "0")}
-            </span>
-          </div>
-          <SupervisorGrid items={ONGOING} />
-        </div>
-
-        
+        </div>        
       </div>
     </section>
   );

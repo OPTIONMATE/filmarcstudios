@@ -19,7 +19,7 @@
   --filmarc-ink: #0d101b; /* raised surfaces */
 
   /* --- Typography ------------------------------------------------------- */
-  --filmarc-chalk: #f5f3ee; /* primary copy */
+  --filmarc-chalk: #d9d7d4; /* primary copy */
   --filmarc-ash: #b2b0aa; /* secondary copy */
   --filmarc-smoke: #757b8b; /* eyebrows / microcopy */
 
@@ -40,7 +40,8 @@
 
  
   --filmarc-bright: #ffffff; /* headline, wordmark, navigation links */
-  --filmarc-cta: #D4AF37; /* the CTA fill — the only bright surface on screen */
+  --filmarc-cta-: #D4AF37;
+  --filmarc-cta: #FAEB03; /* the CTA fill — the only bright surface on screen */
   --filmarc-cta-ink: #111111; /* copy set on the CTA: never white on yellow */
   /* The opening sequence's star: the brand yellow above, plus this one warm
      white core. Those two colours are the whole sequence
@@ -56,7 +57,7 @@
 
   /* --- Derived translucency (always mixed from the palette above) ------- */
   --filmarc-hairline: color-mix(in srgb, var(--filmarc-chalk) 15%, transparent);
-  --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 10%, transparent);
+  --filmarc-overlay-soft: color-mix(in srgb, var(--filmarc-void) 0%, transparent);
   --filmarc-overlay-mid: color-mix(in srgb, var(--filmarc-void) 62%, transparent);
   --filmarc-overlay-strong: color-mix(in srgb, var(--filmarc-void) 90%, transparent);
   /* The heaviest tint the hero's scrim uses: 55% of the void colour, i.e. the
@@ -625,7 +626,7 @@ body {
 }
 
 ::selection {
-  background-color: #D4AF37;
+  background-color: var(--filmarc-cta);
   color: var(--filmarc-abyss);
 }
 

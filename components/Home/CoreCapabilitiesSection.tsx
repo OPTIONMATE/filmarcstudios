@@ -180,7 +180,7 @@ export default function CoreCapabilitiesSection() {
                       </span>
                       <h3
                         id={`core-cap-${capability.id}-title`}
-                        className="font-display text-[clamp(1.35rem,2.4vw,1.9rem)] uppercase leading-[0.95] tracking-[0.02em] text-cta transition-transform duration-300 group-hover:translate-x-1"
+                        className="font-hero-eyebrow text-xl uppercase leading-[0.95] tracking-tight text-cta transition-transform duration-300 group-hover:translate-x-1"
                       >
                         {capability.title}
                       </h3>

@@ -6,7 +6,7 @@ import { DisplayHeading } from "@/components/DisplayHeading";
 import { AI_CAPTION, AI_STAGES } from "@/components/About/aiStages";
 import { AI_POSITIONING_CSS } from "@/components/About/aiPositioningStyles";
 
-const HEADING_LINES = [["AI", "that"], ["serves", "the"], ["filmmaker."]] as const;
+const HEADING_LINES = [["AI", "that", "serves"], ["the", "filmmaker."]] as const;
 
 function FrameCard({ stageIndex }: { stageIndex: number }) {
   const stage = AI_STAGES[stageIndex];

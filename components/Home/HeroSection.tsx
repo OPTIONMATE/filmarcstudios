@@ -139,7 +139,7 @@ export default function HeroSection() {
             <span
               key={word}
               aria-hidden
-              className={`block font-hero-display text-[clamp(2.5rem,11vw,9.5rem)] uppercase leading-[0.9] tracking-[0.01em] text-hero-heading ${
+              className={`block font-hero-display text-[clamp(2.5rem,11vw,9.5rem)] uppercase leading-[0.9] tracking-[0.01em] text-cta ${
                 lineIndex === 0 ? "mt-3 sm:mt-4" : ""
               }`}
             >

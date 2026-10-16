@@ -85,33 +85,6 @@ export const PROJECTS: readonly Project[] = [
     alt: "Paradise — completed production",
     artwork: null,
   },
-  // ——— Ongoing Projects ———
-  {
-    id: "bhagavanthudu",
-    title: "Bhagavanthudu",
-    group: "ongoing",
-    context: "In Production",
-    image: null,
-    alt: "Bhagavanthudu — in production",
-    artwork: "bhagavanthudu",
-  },
-  {
-    id: "jangaa",
-    title: "Jangaa",
-    group: "ongoing",
-    context: "In Production",
-    image: null,
-    alt: "Jangaa — in production",
-    artwork: "jangaa",
-  },
-  {
-    id: "dharma-yodha-sri-krishna",
-    title: "Dharma Yodha Sri Krishna",
-    group: "ongoing",
-    context: "In Production",
-    image: null,
-    alt: "Dharma Yodha Sri Krishna — in production",
-    artwork: "dharma",
-  },
+
 
 ];
